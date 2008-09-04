@@ -5,6 +5,13 @@ CHANGES
 0.2.0 (unreleased)
 ------------------
 
+- Sample server shows how to enable SSL
+
+- Command-line client for testing a remote Key Management Server
+
+- Bugfix: LocalKeyManagementFacility was broken (AttributeError: 'RESTClient'
+  object has no attribute 'POST')
+
 
 0.1.0 (2008-09-03)
 ------------------
