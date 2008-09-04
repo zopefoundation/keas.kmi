@@ -69,6 +69,9 @@ setup (
         ],
     zip_safe = False,
     entry_points = """
+    [console_scripts]
+    testclient = keas.kmi.testclient:main
+
     [paste.app_factory]
     main = keas.kmi.wsgi:application_factory
     """,
