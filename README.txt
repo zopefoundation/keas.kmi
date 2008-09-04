@@ -15,7 +15,7 @@ using::
 The data encryption key can now be retrieved by posting the KEK to another
 URL::
 
-  $ wget https://localhost:8080/key --post-file kek.dat -O datakey.dat --ca-certificate sample.pem
+  $ wget https://localhost:8080/key --header 'Content-Type: text/plain' --post-file kek.dat -O datakey.dat --ca-certificate sample.pem
 
 Note: To be compliant, the server must use an encrypted communication channel
 of course.  The ``--ca-certificate`` tells wget to trust the sample self-signed
