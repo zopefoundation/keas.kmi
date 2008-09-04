@@ -26,6 +26,8 @@ from keas.kmi.facility import LocalKeyManagementFacility
 def ping(kmf):
     client = kmf.clientClass(kmf.url)
     print client.fullStatus
+    print
+    print client.contents
 
 
 def new_key(kmf):

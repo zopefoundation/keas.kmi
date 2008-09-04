@@ -145,7 +145,7 @@ class LocalKeyManagementFacility(EncryptionService):
     def generate(self):
         """See interfaces.IKeyGenerationService"""
         client = self.clientClass(self.url)
-        client.POST('/new')
+        client.post('/new')
         return client.contents
 
     def getEncryptionKey(self, key):
@@ -154,7 +154,7 @@ class LocalKeyManagementFacility(EncryptionService):
             self._cache[key][0] + self.timeout > time.time()):
             return self._cache[key][1]
         client = self.clientClass(self.url)
-        client.POST('/key', key)
+        client.post('/key', key)
         encryptionKey = client.contents
         self._cache[key] = (time.time(), encryptionKey)
         return encryptionKey

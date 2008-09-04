@@ -43,7 +43,7 @@ class FakeRESTClient(object):
     def __init__(self, url):
         self.url = url
 
-    def POST(self, url, data=None):
+    def post(self, url, data=None):
         io = cStringIO.StringIO(data) if data else None
         request = browser.TestRequest(io)
         request.method = 'POST'
