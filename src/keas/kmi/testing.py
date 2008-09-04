@@ -43,13 +43,17 @@ class FakeRESTClient(object):
     def __init__(self, url):
         self.url = url
 
-    def post(self, url, data=None):
+    def post(self, url, data=None, headers={}):
         io = cStringIO.StringIO(data) if data else None
         request = browser.TestRequest(io)
         request.method = 'POST'
         if url == '/new':
             klass = rest.NewView
         elif url == '/key':
+            if headers.get('content-type') != 'text/plain':
+                # ensure we don't trip on
+                # http://trac.pythonpaste.org/pythonpaste/ticket/294
+                raise ValueError('bad content type')
             klass = rest.KeyView
         else:
             raise ValueError(url)

@@ -154,7 +154,7 @@ class LocalKeyManagementFacility(EncryptionService):
             self._cache[key][0] + self.timeout > time.time()):
             return self._cache[key][1]
         client = self.clientClass(self.url)
-        client.post('/key', key)
+        client.post('/key', key, headers={'content-type': 'text/plain'})
         encryptionKey = client.contents
         self._cache[key] = (time.time(), encryptionKey)
         return encryptionKey
