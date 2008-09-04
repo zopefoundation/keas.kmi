@@ -2,8 +2,15 @@
 CHANGES
 =======
 
-
-0.1.0 (2008-??-??)
+0.1.0 (2008-09-03)
 ------------------
 
 - Initial Release
+
+  * Key Generation Service
+
+  * Encryption Service (Master and Local)
+
+  * REST API for key communication between encryption services
+
+  * Encrypted Persistent Storage

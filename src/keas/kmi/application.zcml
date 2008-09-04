@@ -14,12 +14,22 @@
 
   <utility
       provides="zope.error.interfaces.IErrorReportingUtility"
-      component="zope.error.error.globalErrorReportingUtility"
+      component="keas.kmi.application.globalErrorReportingUtility"
       />
 
-  <include package="keas.kmi" />
-
   <subscriber handler="zope.component.event.objectEventNotify" />
+
+  <!-- Setup charset negotiation -->
+  <adapter
+      factory="zope.publisher.http.HTTPCharsets"
+      for="zope.publisher.interfaces.http.IHTTPRequest"
+      provides="zope.i18n.interfaces.IUserPreferredCharsets"
+      />
+  <adapter
+      factory="zope.app.publisher.browser.ModifiableBrowserLanguages"
+      for="zope.publisher.interfaces.http.IHTTPRequest"
+      provides="zope.i18n.interfaces.IModifiableUserPreferredLanguages"
+      />
 
   <include package="keas.kmi" />
   <include package="keas.kmi" file="db.zcml" />
