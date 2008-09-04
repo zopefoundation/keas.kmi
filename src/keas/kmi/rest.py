@@ -26,13 +26,17 @@ class RestView(BrowserPage):
             return 'Method not allowed.'
         return getattr(self, method)()
 
-class NewView(RestView):
+class StatusView(RestView):
 
     def GET(self):
         self.request.response.setHeader('content-type', 'text/plain')
-        return self.context.generate()
+        return 'KMS server holding %d keys' % len(self.context)
 
-    POST = GET
+class NewView(RestView):
+
+    def POST(self):
+        self.request.response.setHeader('content-type', 'text/plain')
+        return self.context.generate()
 
 class KeyView(RestView):
 
@@ -41,4 +45,9 @@ class KeyView(RestView):
         stream.seek(0)
         key = stream.read()
         self.request.response.setHeader('content-type', 'text/plain')
-        return self.context.getEncryptionKey(key)
+        try:
+            return self.context.getEncryptionKey(key)
+        except KeyError:
+            self.request.response.setStatus(404)
+            return 'Key not found'
+

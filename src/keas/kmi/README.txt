@@ -205,7 +205,7 @@ The REST API of the master key management facility defines the communication
 with the local facility. When a new encryption key pair is created, we simply
 make a `POST` call to the following URL::
 
-  http://server:port/master/new
+  http://server:port/new
 
 The request should have no body and the response is simply the key encrypting
 key.
@@ -216,19 +216,11 @@ So let's have a look at the call:
   >>> from zope.publisher.browser import TestRequest
 
   >>> request = TestRequest()
-  >>> request.method = 'GET'
+  >>> request.method = 'POST'
 
   >>> newCall = rest.NewView(keys, request)
   >>> key3 = newCall()
   >>> print key3
-  -----BEGIN RSA PRIVATE KEY-----
-  ...
-  -----END RSA PRIVATE KEY-----
-
-You can also use post for the new key:
-
-  >>> request.method = 'POST'
-  >>> print newCall()
   -----BEGIN RSA PRIVATE KEY-----
   ...
   -----END RSA PRIVATE KEY-----
@@ -243,7 +235,7 @@ The key is available in the facility of course:
 
 We can now fetch the encryption key pair using a `POST` call to this URL::
 
-  http://server:port/master/key
+  http://server:port/key
 
 The request sends the key encrypting key in its body. The response is the
 encryption key string:
@@ -258,6 +250,30 @@ encryption key string:
   >>> encKey = keyCall()
   >>> len(encKey)
   32
+
+If you try to request a nonexistent key, you get a 404 error:
+encryption key string:
+
+  >>> import cStringIO
+  >>> io = cStringIO.StringIO('xyzzy')
+
+  >>> request = TestRequest(io)
+  >>> request.method = 'POST'
+
+  >>> keyCall = rest.KeyView(keys, request)
+  >>> print keyCall()
+  Key not found
+  >>> request.response.getStatus()
+  404
+
+A `GET` request to the root shows us a server status page
+
+  >>> request = TestRequest()
+  >>> request.method = 'GET'
+
+  >>> newCall = rest.StatusView(keys, request)
+  >>> print newCall()
+  KMS server holding 3 keys
 
 
 The Testing Key Management Facility

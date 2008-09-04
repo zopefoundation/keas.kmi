@@ -22,7 +22,7 @@ def read(*rnames):
 
 setup (
     name='keas.kmi',
-    version='0.2.0dev',
+    version='0.2.0',
     author = "Stephan Richter and the Zope Community",
     author_email = "zope-dev@zope.org",
     description = "A Key Management Infrastructure",
@@ -69,6 +69,9 @@ setup (
         ],
     zip_safe = False,
     entry_points = """
+    [console_scripts]
+    testclient = keas.kmi.testclient:main
+
     [paste.app_factory]
     main = keas.kmi.wsgi:application_factory
     """,
