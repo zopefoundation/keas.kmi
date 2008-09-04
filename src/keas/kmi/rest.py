@@ -28,11 +28,9 @@ class RestView(BrowserPage):
 
 class NewView(RestView):
 
-    def GET(self):
+    def POST(self):
         self.request.response.setHeader('content-type', 'text/plain')
         return self.context.generate()
-
-    POST = GET
 
 class KeyView(RestView):
 

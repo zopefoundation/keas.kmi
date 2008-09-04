@@ -216,19 +216,11 @@ So let's have a look at the call:
   >>> from zope.publisher.browser import TestRequest
 
   >>> request = TestRequest()
-  >>> request.method = 'GET'
+  >>> request.method = 'POST'
 
   >>> newCall = rest.NewView(keys, request)
   >>> key3 = newCall()
   >>> print key3
-  -----BEGIN RSA PRIVATE KEY-----
-  ...
-  -----END RSA PRIVATE KEY-----
-
-You can also use post for the new key:
-
-  >>> request.method = 'POST'
-  >>> print newCall()
   -----BEGIN RSA PRIVATE KEY-----
   ...
   -----END RSA PRIVATE KEY-----
