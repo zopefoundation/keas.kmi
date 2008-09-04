@@ -31,6 +31,8 @@ setup (
         + '\n\n' +
         read('src', 'keas', 'kmi', 'README.txt')
         + '\n\n' +
+        read('src', 'keas', 'kmi', 'persistent.txt')
+        + '\n\n' +
         read('CHANGES.txt')
         ),
     license = "ZPL 2.1",
