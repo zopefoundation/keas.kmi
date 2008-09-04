@@ -8,28 +8,28 @@
   <!-- We purposefully keep the access to the facility very limited -->
   <class class=".facility.KeyManagementFacility">
     <require
-	permission="keas.kmi.Encrypt"
-	attributes="encrypt decrypt"
-	/>
+        permission="keas.kmi.Encrypt"
+        attributes="encrypt decrypt"
+        />
     <require
-	permission="keas.kmi.GenerateKey"
-	attributes="generate"
-	/>
+        permission="keas.kmi.GenerateKey"
+        attributes="generate"
+        />
     <require
-	permission="keas.kmi.AccessKey"
-	attributes="getEncryptionKey __len__"
-	/>
+        permission="keas.kmi.AccessKey"
+        attributes="getEncryptionKey __len__"
+        />
   </class>
 
   <class class=".facility.LocalKeyManagementFacility">
     <require
-	permission="keas.kmi.Encrypt"
-	attributes="encrypt decrypt"
-	/>
+        permission="keas.kmi.Encrypt"
+        attributes="encrypt decrypt"
+        />
     <require
-	permission="keas.kmi.GenerateKey"
-	attributes="generate"
-	/>
+        permission="keas.kmi.GenerateKey"
+        attributes="generate"
+        />
   </class>
 
 </configure>
