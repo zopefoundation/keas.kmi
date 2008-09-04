@@ -251,6 +251,21 @@ encryption key string:
   >>> len(encKey)
   32
 
+If you try to request a nonexistent key, you get a 404 error:
+encryption key string:
+
+  >>> import cStringIO
+  >>> io = cStringIO.StringIO('xyzzy')
+
+  >>> request = TestRequest(io)
+  >>> request.method = 'POST'
+
+  >>> keyCall = rest.KeyView(keys, request)
+  >>> print keyCall()
+  Key not found
+  >>> request.response.getStatus()
+  404
+
 A `GET` request to the root shows us a server status page
 
   >>> request = TestRequest()
