@@ -17,5 +17,5 @@ URL::
 
   $ wget http://localhost:8080/key --post-file kek.dat -O datakey.dat
 
-Note: To be compliant, the server must use an encrypted communication cahnnel
+Note: To be compliant, the server must use an encrypted communication channel
 of course.
