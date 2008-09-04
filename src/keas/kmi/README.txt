@@ -205,7 +205,7 @@ The REST API of the master key management facility defines the communication
 with the local facility. When a new encryption key pair is created, we simply
 make a `POST` call to the following URL::
 
-  http://server:port/master/new
+  http://server:port/new
 
 The request should have no body and the response is simply the key encrypting
 key.
@@ -235,7 +235,7 @@ The key is available in the facility of course:
 
 We can now fetch the encryption key pair using a `POST` call to this URL::
 
-  http://server:port/master/key
+  http://server:port/key
 
 The request sends the key encrypting key in its body. The response is the
 encryption key string:
@@ -250,6 +250,15 @@ encryption key string:
   >>> encKey = keyCall()
   >>> len(encKey)
   32
+
+A `GET` request to the root shows us a server status page
+
+  >>> request = TestRequest()
+  >>> request.method = 'GET'
+
+  >>> newCall = rest.StatusView(keys, request)
+  >>> print newCall()
+  KMS server holding 3 keys
 
 
 The Testing Key Management Facility

@@ -17,7 +17,7 @@
 	/>
     <require
 	permission="keas.kmi.AccessKey"
-	attributes="getEncryptionKey"
+	attributes="getEncryptionKey __len__"
 	/>
   </class>
 

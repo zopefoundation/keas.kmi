@@ -7,6 +7,9 @@ CHANGES
 
 - Sample server shows how to enable SSL
 
+- Front page now shows the number of stored keys instead of a
+  ComponentLookupError message.
+
 - Command-line client for testing a remote Key Management Server
 
 - Bugfix: LocalKeyManagementFacility was broken (AttributeError: 'RESTClient'

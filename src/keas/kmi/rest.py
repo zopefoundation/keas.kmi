@@ -26,6 +26,12 @@ class RestView(BrowserPage):
             return 'Method not allowed.'
         return getattr(self, method)()
 
+class StatusView(RestView):
+
+    def GET(self):
+        self.request.response.setHeader('content-type', 'text/plain')
+        return 'KMS server holding %d keys' % len(self.context)
+
 class NewView(RestView):
 
     def POST(self):
