@@ -10,12 +10,14 @@ To get started do::
 The server will come up on port 8080. You can create a new key encrypting key
 using::
 
-  $ wget http://localhost:8080/new -O kek.dat
+  $ wget https://localhost:8080/new -O kek.dat --ca-certificate sample.pem
 
 The data encryption key can now be retrieved by posting the KEK to another
 URL::
 
-  $ wget http://localhost:8080/key --post-file kek.dat -O datakey.dat
+  $ wget https://localhost:8080/key --post-file kek.dat -O datakey.dat --ca-certificate sample.pem
 
 Note: To be compliant, the server must use an encrypted communication channel
-of course.
+of course.  The ``--ca-certificate`` tells wget to trust the sample self-signed
+certificate included in the keas.kmi distribution; you'll want to generate a
+new SSL certificate for production use.
