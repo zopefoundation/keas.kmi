@@ -4,8 +4,8 @@ This package provides a NIST SP 800-57 compliant Key Management Infrastructure
 To get started do::
 
   $ python boostrap.py # Must be Python 2.5
-  $ ./bin/buildout # Depends on successfull compilation of M2Crypto
-  $ ./bin/paster serve server.ini
+  $ ./bin/buildout     # Depends on successfull compilation of M2Crypto
+  $ ./bin/runserver    # or ./bin/paster serve server.ini
 
 The server will come up on port 8080. You can create a new key encrypting key
 using::
