@@ -1,0 +1,19 @@
+
+<configure xmlns="http://namespaces.zope.org/zope"
+           i18n_domain="keas">
+
+  <configure
+      xmlns:zcml="http://namespaces.zope.org/zcml"
+      xmlns:apidoc="http://namespaces.zope.org/apidoc"
+      zcml:condition="have apidoc">
+
+    <apidoc:bookchapter
+        id="keas.kmi"
+        title="Key Management Infrastructure (keas.kmi)"
+        doc_path="README.txt"
+        parent="keas"
+        />
+
+  </configure>
+
+</configure>

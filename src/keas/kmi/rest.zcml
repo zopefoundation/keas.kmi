@@ -1,0 +1,18 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:browser="http://namespaces.zope.org/browser">
+
+  <browser:page
+      for=".interfaces.IKeyManagementFacility"
+      name="new"
+      class=".rest.NewView"
+      permission="zope.Public"
+      />
+
+  <browser:page
+      for=".interfaces.IKeyManagementFacility"
+      name="key"
+      class=".rest.KeyView"
+      permission="zope.Public"
+      />
+
+</configure>

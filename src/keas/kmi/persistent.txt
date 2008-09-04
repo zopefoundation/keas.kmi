@@ -1,0 +1,184 @@
+============================
+Encrypted Persistent Objects
+============================
+
+This package provides an `EncryptedPersistent` class that takes care of data
+encryption in the storage.  Usage is pretty simple: instead of subclassing
+`persistent.Persistent`, subclass `keas.kmi.persistent.EncryptedPersistent`:
+
+    >>> from keas.kmi.persistent import EncryptedPersistent
+    >>> class UserPrivateData(EncryptedPersistent):
+    ...     def __init__(self, name, ssn):
+    ...         self.name = name
+    ...         self.ssn = ssn
+    ...     def __repr__(self):
+    ...         return '<UserPrivateData %s %s>' % (self.name, self.ssn)
+
+    >>> userdata = UserPrivateData('Stephan Richter', '123456789')
+    >>> userdata
+    <UserPrivateData Stephan Richter 123456789>
+
+The key used for encryption and decryption comes from an IKeyHolder utility
+that you're supposed to provide in your application.
+
+    >>> from keas.kmi.testing import TestingKeyHolder
+    >>> from zope.component import provideUtility
+    >>> provideUtility(TestingKeyHolder())
+
+None of the raw data appears in the pickle
+
+    >>> import cPickle as pickle
+    >>> pickled_data = pickle.dumps(userdata)
+    >>> 'Stephan' in pickled_data
+    False
+    >>> '123456789' in pickled_data
+    False
+
+We can successfully load it
+
+    >>> pickle.loads(pickled_data)
+    <UserPrivateData Stephan Richter 123456789>
+
+Every persistent object is stored separately.  Only the objects that inherit
+from `EncryptedPersistent` will be encrypted.
+
+    >>> from zope.app.generations.generations import PersistentDict
+    >>> users = PersistentDict()
+    >>> users['stephan'] = UserPrivateData('Stephan Richter', '123456789')
+    >>> users['mgedmin'] = UserPrivateData('Marius Gedminas', '987654321')
+
+    >>> pickled_data = pickle.dumps(users)
+    >>> 'stephan' in pickled_data
+    True
+    >>> '123456789' in pickled_data
+    False
+
+
+Persistent References
+---------------------
+
+Enough pickling; we really should make sure our magic does not interfere
+with ZODB keeping track of persistent object references.
+
+First let's make our `EncryptedPersistent` objects have some references to
+other (encrypted and unencrypted) persistent objects
+
+    >>> users['stephan'].__parent__ = users
+    >>> users['mgedmin'].__parent__ = users
+
+    >>> users['stephan'].friend = users['mgedmin']
+    >>> users['mgedmin'].friend = users['stephan']
+
+Now let's create a database:
+
+    >>> import ZODB.DB
+    >>> import ZODB.MappingStorage
+    >>> db = ZODB.DB(ZODB.MappingStorage.MappingStorage())
+    >>> conn = db.open()
+    >>> conn.root()['users'] = users
+    >>> import transaction
+    >>> transaction.commit()
+
+And we can open a second connection (while carefully keeping the first one
+open, to ensure it's not reused and we actually load the pickles rather than
+receiving persistent objects from a cache) and load the whole object graph
+
+    >>> conn2 = db.open()
+    >>> users2 = conn2.root()['users']
+    >>> users2['stephan']
+    <UserPrivateData Stephan Richter 123456789>
+    >>> users2['mgedmin']
+    <UserPrivateData Marius Gedminas 987654321>
+
+All the object references between persistent and encrypted persistent objects
+are preserved correctly:
+
+    >>> users2['stephan'].friend
+    <UserPrivateData Marius Gedminas 987654321>
+    >>> users2['mgedmin'].friend
+    <UserPrivateData Stephan Richter 123456789>
+
+    >>> users2['stephan'].__parent__ is users2
+    True
+    >>> users2['mgedmin'].__parent__ is users2
+    True
+    >>> users2['stephan'].friend is users2['mgedmin']
+    True
+    >>> users2['mgedmin'].friend is users2['stephan']
+    True
+
+
+Data conversion
+---------------
+
+If you used to have simple persistent objects, and now want to convert them
+to `EncryptedPersistent`, think again.  This is not secure.  You already have
+unencrypted bits on your disk platters, and the only way to get rid of them
+is to physically destroy the disk.
+
+But if you have a testing-only database with fake data, and would like to
+continue using it with a small conversion step, you can use the
+``convert_object_to_encrypted()`` function.
+
+    >>> from keas.kmi.persistent import convert_object_to_encrypted
+
+Here's the old class definition that we'll store:
+
+    >>> from persistent import Persistent
+    >>> class Password(Persistent):
+    ...     def __init__(self, password):
+    ...         self.password = password
+
+    >>> db = ZODB.DB(ZODB.MappingStorage.MappingStorage())
+    >>> conn = db.open()
+    >>> conn.root()['pwd'] = Password('xyzzy')
+    >>> transaction.commit()
+
+And now we redefine the class:
+
+    >>> class Password(EncryptedPersistent):
+    ...     def __init__(self, password):
+    ...         self.password = password
+
+Once again we have to use a different connection object (while keeping the
+first one alive) to avoid stepping on a ZODB cache:
+
+    >>> conn2 = db.open()
+    >>> pwd = conn2.root()['pwd']
+
+If you try to use `Password` objects loaded from the database, you'll get an
+error:
+
+    >>> pwd.password
+    Traceback (most recent call last):
+      ...
+    ValueError: need more than 1 value to unpack
+
+But we can apply the conversion step:
+
+    >>> convert_object_to_encrypted(pwd)
+    >>> pwd.password
+    'xyzzy'
+
+The converted state is stored in the DB
+
+    >>> transaction.commit()
+    >>> conn3 = db.open()
+    >>> pwd = conn3.root()['pwd']
+    >>> pwd.password
+    'xyzzy'
+
+
+Encryption Stability
+--------------------
+
+Once encrypted, the same string can always be decrypted with the same key:
+
+    >>> pickle.loads("ccopy_reg\n__newobj__\np1\n(ckeas.kmi.tests.doctestfile\nUserPrivateData\np2\ntRp3\n(S'h:(\\xf7\\x81\\x07<\\x96\\xb2)\\xd2\\x11\\x80\\x16\\xcdo\\xec\\xe7\\xbfc\\x9dx^\\xfa\\xd0)z\\x91\\x17\\xd5o\\xe8(jH\\xfc{?\\x10k\\x9e\\x90D\\xbew\\xc6]r\\xd1\\xc5\\xfb\\xeaAT\\x16\\xd1\\xa4\\x07\\xaf\\x12\\xe3\\xe5s\\xb5'\n(ltb.")
+    <UserPrivateData Stephan Richter 123456789>
+
+This is a regression test for a problem we had with M2Crypto: if you pass an
+empty `initializationVector` to `M2Crypto.EVP.Cipher`, it propably uses a
+chunk of uninitialized memory and ends up not being able to decrypt the
+pickles after you restart the Python process.
+

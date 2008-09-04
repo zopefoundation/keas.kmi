@@ -1,0 +1,40 @@
+<configure xmlns="http://namespaces.zope.org/zope">
+
+  <include package="zope.app.component" file="meta.zcml" />
+  <include package="zope.app.publication" file="meta.zcml" />
+  <include package="zope.app.publisher.browser" file="meta.zcml" />
+  <include package="zope.app.security" file="meta.zcml" />
+
+  <include package="zope.publisher" />
+
+  <include package="zope.app.publication" />
+  <include package="zope.app.publisher" />
+  <include package="zope.app.publisher.browser" />
+  <include package="zope.app.security" />
+
+  <utility
+      provides="zope.error.interfaces.IErrorReportingUtility"
+      component="zope.error.error.globalErrorReportingUtility"
+      />
+
+  <include package="keas.kmi" />
+
+  <subscriber handler="zope.component.event.objectEventNotify" />
+
+  <include package="keas.kmi" />
+  <include package="keas.kmi" file="db.zcml" />
+
+  <include package="zope.securitypolicy" file="meta.zcml" />
+  <include package="zope.securitypolicy" />
+  <securityPolicy
+      component="zope.securitypolicy.zopepolicy.ZopeSecurityPolicy" />
+
+  <!-- Grant access to anybody -->
+  <unauthenticatedPrincipal id="zope.anybody" title="Unauthenticated User" />
+  <unauthenticatedGroup id="zope.Anybody" title="Unauthenticated Users" />
+
+  <grant principal="zope.Anybody" permission="zope.View" />
+  <grant principal="zope.Anybody" permission="keas.kmi.GenerateKey" />
+  <grant principal="zope.Anybody" permission="keas.kmi.AccessKey" />
+
+</configure>
