@@ -20,9 +20,12 @@ import transaction
 from zope.testing import doctest
 from zope.app.testing import setup
 from zope.component import provideUtility
+from zope.interface.verify import verifyObject
 
 from keas.kmi.testing import TestingKeyManagementFacility
+from keas.kmi.keyholder import KeyHolder
 from keas.kmi.interfaces import IKeyManagementFacility
+from keas.kmi.interfaces import IKeyHolder
 
 
 def setUpPersistent(test):
@@ -38,6 +41,16 @@ def tearDownPersistent(test):
     setup.tearDownTestAsModule(test)
 
 
+def doctest_KeyHolder():
+    """Smoke test for the KeyHolder class.
+
+        >>> holder = KeyHolder(__file__)
+        >>> verifyObject(IKeyHolder, holder)
+        True
+
+    """
+
+
 def test_suite():
     return unittest.TestSuite([
         doctest.DocFileSuite(
@@ -48,4 +61,5 @@ def test_suite():
             'persistent.txt',
             setUp=setUpPersistent, tearDown=tearDownPersistent,
             optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS),
+        doctest.DocTestSuite(),
     ])

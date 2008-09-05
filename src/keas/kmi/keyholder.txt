@@ -1,0 +1,42 @@
+===================
+Database key holder
+===================
+
+If you want to have encrypted objects in the database, you need to store the
+key encrypting key somewhere.  A DatabaseKeyHolder stores it in the database
+alongside your encrypted objects.  This is convenient, and slightly secure:
+If someone steals your database, they won't be able to decrypt your data
+without gaining access to the Key Management Server.
+
+    >>> from keas.kmi.keyholder import DatabaseKeyHolder
+    >>> from keas.kmi.interfaces import IKeyHolder
+    >>> from zope.interface.verify import verifyObject
+    >>> holder = DatabaseKeyHolder()
+    >>> verifyObject(IKeyHolder, holder)
+    True
+
+Initially there is no key
+
+    >>> holder.key
+
+We can set it
+
+    >>> holder.key = 'xyzzy'
+    >>> holder.key
+    'xyzzy'
+
+It is actually stored in the database
+
+    >>> from keas.kmi.keyholder improt KEY
+    >>> from zope.component import getUtility
+    >>> from ZODB.interfaces import IDatabase
+    >>> getUtility(IDatabase).open().root()[KEY]
+    'xyzzy'
+
+You cannot change the key once it's set
+
+    >>> holder.key = 'wubawuba'
+    Traceback (most recent call last):
+      ...
+    ValueError: waaah
+
