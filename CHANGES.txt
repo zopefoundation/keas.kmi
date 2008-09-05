@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-0.3.0 (unreleased)
+0.3.0 (2008-09-04)
 ------------------
 
 - A simple KeyHolder utility is available in keas.kmi.keyholder.
