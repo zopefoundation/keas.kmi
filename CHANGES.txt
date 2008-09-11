@@ -2,8 +2,10 @@
 CHANGES
 =======
 
-0.3.1 (unreleased)
+0.3.1 (2008-09-11)
 ------------------
+
+- Relax M2Crypto version requirements to 0.18 or newer.
 
 
 0.3.0 (2008-09-04)
