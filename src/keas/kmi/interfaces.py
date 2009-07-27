@@ -17,7 +17,7 @@ $Id$
 __docformat__ = "reStructuredText"
 import zope.interface
 import zope.schema
-from zope.app.container import interfaces
+from zope.container import interfaces
 
 
 class IKey(zope.interface.Interface):

@@ -42,8 +42,8 @@ We can successfully load it
 Every persistent object is stored separately.  Only the objects that inherit
 from `EncryptedPersistent` will be encrypted.
 
-    >>> from zope.app.generations.generations import PersistentDict
-    >>> users = PersistentDict()
+    >>> import persistent.dict
+    >>> users = persistent.dict.PersistentDict()
     >>> users['stephan'] = UserPrivateData('Stephan Richter', '123456789')
     >>> users['mgedmin'] = UserPrivateData('Marius Gedminas', '987654321')
 

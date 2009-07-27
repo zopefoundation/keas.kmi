@@ -26,7 +26,7 @@ import zope.interface
 import zope.location
 from z3c.rest import client
 from zope.annotation.interfaces import IAttributeAnnotatable
-from zope.app.container import btree
+from zope.container import btree
 from zope.dublincore import property
 from zope.schema.fieldproperty import FieldProperty
 from keas.kmi import interfaces

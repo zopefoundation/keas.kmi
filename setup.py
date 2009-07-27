@@ -22,7 +22,7 @@ def read(*rnames):
 
 setup (
     name='keas.kmi',
-    version='0.3.2dev',
+    version='1.0.0',
     author = "Stephan Richter and the Zope Community",
     author_email = "zope-dev@zope.org",
     description = "A Key Management Infrastructure",
@@ -60,12 +60,15 @@ setup (
         ),
     install_requires = [
         'M2Crypto>=0.18',
+        'ZODB3',
         'setuptools',
         'z3c.rest',
+        'zope.annotation',
         'zope.component',
+        'zope.container',
+        'zope.dublincore',
         'zope.interface',
         'zope.schema',
-        'ZODB3',
         ],
     zip_safe = False,
     entry_points = """
