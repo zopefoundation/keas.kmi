@@ -22,7 +22,7 @@ def read(*rnames):
 
 setup (
     name='keas.kmi',
-    version='1.1.0',
+    version='1.2.0dev',
     author = "Stephan Richter and the Zope Community",
     author_email = "zope-dev@zope.org",
     description = "A Key Management Infrastructure",
