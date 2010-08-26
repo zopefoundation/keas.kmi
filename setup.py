@@ -22,7 +22,7 @@ def read(*rnames):
 
 setup (
     name='keas.kmi',
-    version='1.1.0dev',
+    version='1.1.0',
     author = "Stephan Richter and the Zope Community",
     author_email = "zope-dev@zope.org",
     description = "A Key Management Infrastructure",
@@ -38,7 +38,7 @@ setup (
     license = "ZPL 2.1",
     keywords = "zope3 security key management infrastructure nist 800-57",
     classifiers = [
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Zope Public License',
