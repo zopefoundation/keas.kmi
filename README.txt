@@ -3,7 +3,7 @@ This package provides a NIST SP 800-57 compliant Key Management Infrastructure
 
 To get started do::
 
-  $ python boostrap.py # Must be Python 2.5
+  $ python boostrap.py # Must be Python 2.5 or higher
   $ ./bin/buildout     # Depends on successfull compilation of M2Crypto
   $ ./bin/runserver    # or ./bin/paster serve server.ini
 

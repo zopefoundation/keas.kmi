@@ -4,7 +4,6 @@ WSGI application for the Key Management Server.
 
 import os
 
-import zope.app.appsetup
 from zope.app.wsgi import getWSGIApplication
 
 

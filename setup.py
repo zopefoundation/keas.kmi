@@ -59,10 +59,11 @@ setup (
             ],
         ),
     install_requires = [
-        'M2Crypto>=0.18',
+        'M2Crypto',
         'ZODB3',
         'setuptools',
         'z3c.rest',
+        'zope.app.wsgi',
         'zope.annotation',
         'zope.component',
         'zope.container',
