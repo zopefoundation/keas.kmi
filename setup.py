@@ -38,7 +38,7 @@ setup (
     license = "ZPL 2.1",
     keywords = "zope3 security key management infrastructure nist 800-57",
     classifiers = [
-        'Development Status :: 5 - Stable',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Zope Public License',
