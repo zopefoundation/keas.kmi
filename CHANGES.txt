@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-1.1.1 (unreleased)
+1.1.1 (2010-08-27)
 ------------------
 
 - Fixed deprecation warnings about md5 and zope.testing.doctest.
