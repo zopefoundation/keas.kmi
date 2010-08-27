@@ -15,9 +15,9 @@
 $Id$
 """
 import unittest
+import doctest
 
 import transaction
-from zope.testing import doctest
 from zope.app.testing import setup
 from zope.component import provideUtility
 from zope.interface.verify import verifyObject

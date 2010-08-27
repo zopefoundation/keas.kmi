@@ -17,11 +17,16 @@ $Id$
 """
 from __future__ import absolute_import
 __docformat__ = "reStructuredText"
-import M2Crypto
+
 import datetime
-import md5
-import persistent
 import time
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
+
+import M2Crypto
+import persistent
 import zope.interface
 import zope.location
 from z3c.rest import client
@@ -29,7 +34,9 @@ from zope.annotation.interfaces import IAttributeAnnotatable
 from zope.container import btree
 from zope.dublincore import property
 from zope.schema.fieldproperty import FieldProperty
+
 from keas.kmi import interfaces
+
 
 class Key(zope.location.Location, persistent.Persistent):
     zope.interface.implements(interfaces.IKey, IAttributeAnnotatable)
@@ -106,7 +113,7 @@ class KeyManagementFacility(EncryptionService, btree.BTreeContainer):
         # 3. Generate the encryption key
         key = M2Crypto.Rand.rand_bytes(self.keyLength)
         # 4. Create the lookup key in the container
-        hash = md5.new()
+        hash = md5()
         hash.update(privateKey)
         # 5. Save the encryption key
         encryptedKey = rsa.public_encrypt(key, self.rsaPadding)
@@ -117,7 +124,7 @@ class KeyManagementFacility(EncryptionService, btree.BTreeContainer):
     def getEncryptionKey(self, key):
         """Given the key encrypting key, get the encryption key."""
         # 1. Create the lookup key in the container
-        hash = md5.new()
+        hash = md5()
         hash.update(key)
         # 2. Extract the encrypted encryption key
         encryptedKey = self[hash.hexdigest()].key

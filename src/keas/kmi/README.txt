@@ -61,9 +61,11 @@ HIPAA and NIST key strength requirement.
 
 You can now use this key encrypting key to extract the encryption keys:
 
-  >>> import md5
-  >>> hash = md5.new()
-  >>> hash.update(key)
+  >>> try:
+  ...    from hashlib import md5
+  ... except ImportError:
+  ...    from md5 import md5
+  >>> hash = md5(key)
 
   >>> keys.get(hash.hexdigest())
   <Key ...>
@@ -191,8 +193,7 @@ The local method call is identical to the master one:
 The operation is forwarded to the master server, so that the key is available
 there as well:
 
-  >>> hash = md5.new()
-  >>> hash.update(key2)
+  >>> hash = md5(key2)
 
   >>> hash.hexdigest() in keys
   True
@@ -227,8 +228,7 @@ So let's have a look at the call:
 
 The key is available in the facility of course:
 
-  >>> hash = md5.new()
-  >>> hash.update(key3)
+  >>> hash = md5(key3)
 
   >>> hash.hexdigest() in keys
   True

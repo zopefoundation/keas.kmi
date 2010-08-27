@@ -14,10 +14,16 @@
 """
 $Id$
 """
-import md5
+
 import cStringIO
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
+
 from zope.publisher import browser
 from zope.interface import implements
+
 from keas.kmi import facility, rest, interfaces
 
 KeyEncyptingKey = '''-----BEGIN RSA PRIVATE KEY-----
@@ -72,9 +78,7 @@ class TestingKeyManagementFacility(facility.KeyManagementFacility):
 
     def __init__(self):
         super(TestingKeyManagementFacility, self).__init__()
-        hash = md5.new()
-        hash.update(KeyEncyptingKey)
-        md5Key = hash.hexdigest()
+        md5Key = md5(KeyEncyptingKey).hexdigest()
         self[md5Key] = facility.Key(EncryptedEncryptionKey)
 
     def generate(self):
