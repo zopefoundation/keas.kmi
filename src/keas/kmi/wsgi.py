@@ -11,8 +11,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""
-WSGI application for the Key Management Server.
+"""WSGI application for the Key Management Server.
 """
 import keas.kmi
 import os

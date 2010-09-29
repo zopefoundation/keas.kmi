@@ -11,13 +11,10 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""
-$Id
+"""Simple Key Holder
 """
 __docformat__ = "reStructuredText"
-
 from zope.interface import implements
-
 from keas.kmi.interfaces import IKeyHolder
 
 

@@ -11,8 +11,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""
-$Id$
+"""Test client to access the KMI server API.
 """
 __docformat__ = "reStructuredText"
 
