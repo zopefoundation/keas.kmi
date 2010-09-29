@@ -1,35 +1,26 @@
-<configure
-    xmlns="http://namespaces.zope.org/zope"
-    i18n_domain="keas">
+<configure xmlns="http://namespaces.repoze.org/bfg">
 
-  <include file="rest.zcml" />
-  <include file="security.zcml" />
+  <include package="repoze.bfg.includes" />
 
-  <!-- We purposefully keep the access to the facility very limited -->
-  <class class=".facility.KeyManagementFacility">
-    <require
-        permission="keas.kmi.Encrypt"
-        attributes="encrypt decrypt"
-        />
-    <require
-        permission="keas.kmi.GenerateKey"
-        attributes="generate"
-        />
-    <require
-        permission="keas.kmi.AccessKey"
-        attributes="getEncryptionKey __len__"
-        />
-  </class>
+  <route
+    name="keas.kmi.index"
+    path="/"
+    request_method="GET"
+    view=".rest.get_status"
+    />
 
-  <class class=".facility.LocalKeyManagementFacility">
-    <require
-        permission="keas.kmi.Encrypt"
-        attributes="encrypt decrypt"
-        />
-    <require
-        permission="keas.kmi.GenerateKey"
-        attributes="generate"
-        />
-  </class>
+  <route
+    name="keas.kmi.new"
+    path="/new"
+    request_method="POST"
+    view=".rest.create_key"
+    />
+
+  <route
+    name="keas.kmi.key"
+    path="/key"
+    request_method="POST"
+    view=".rest.get_key"
+    />
 
 </configure>

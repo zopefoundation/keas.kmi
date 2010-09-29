@@ -12,19 +12,17 @@
 #
 ##############################################################################
 """
-$Id$
 """
+import StringIO
+import webob
+from zope.publisher import browser
+from zope.interface import implements
+from keas.kmi import facility, rest, interfaces
 
-import cStringIO
 try:
     from hashlib import md5
 except ImportError:
     from md5 import md5
-
-from zope.publisher import browser
-from zope.interface import implements
-
-from keas.kmi import facility, rest, interfaces
 
 KeyEncyptingKey = '''-----BEGIN RSA PRIVATE KEY-----
 MIIBOAIBAAJBAL+VS9lDsS9XOaeJppfK9lhxKMRFdcg50MR3aJEQK9rvDEqNwBS9
@@ -42,44 +40,79 @@ EncryptedEncryptionKey = (
     '\x10}[\xfd\x19\x98\xb1\xfa*V~U\xdf\t\x02\x01\xa6\xa8\xae\x8b\x8cm\xd9n'
     '\xd5\x83\xa1%k\x16lfuY\\q\x8c\x8b')
 
-class FakeRESTClient(object):
+class FakeHTTPMessage(object):
 
-    context = None
+    def __init__(self, res):
+        self.res = res
+        self.headers = ['Server: Fake/1.0']
 
-    def __init__(self, url):
-        self.url = url
+class FakeHTTPResponse(object):
 
-    def post(self, url, data=None, headers={}):
-        io = cStringIO.StringIO(data) if data else None
-        request = browser.TestRequest(io)
-        request.method = 'POST'
+    # These attributes should be overridden by the test setup.
+    status = 200
+    reason = 'Ok'
+
+    def __init__(self, data):
+        self.fp = StringIO.StringIO(data)
+        self.msg = FakeHTTPMessage(self)
+
+    def read(self, amt=10*2**10):
+        data = self.fp.read(amt)
+        if self.fp.len == self.fp.tell():
+            self.fp = None
+        return data
+
+    def getheader(self, name):
+        if name.lower() == 'content-length':
+            return str(len(self.fp.getvalue()))
+
+    def close(self):
+        pass
+
+
+class FakeHTTPConnection(object):
+
+    def __init__(self, host, port=None, timeout=10):
+        self.host = host
+        self.port = port
+        self.request_data = None
+
+    def request(self, method, url, body=None, headers=None):
+        self.request_data = (method, url, body, headers)
+
+    def getresponse(self, buffering=False):
+        url = self.request_data[1]
         if url == '/new':
-            klass = rest.NewView
+            view = rest.create_key
         elif url == '/key':
-            if headers.get('content-type') != 'text/plain':
+            if self.request_data[3].get('content-type') != 'text/plain':
                 # ensure we don't trip on
                 # http://trac.pythonpaste.org/pythonpaste/ticket/294
                 raise ValueError('bad content type')
-            klass = rest.KeyView
+            view = rest.get_key
         else:
             raise ValueError(url)
 
-        view = klass(self.context, request)
-        self.contents = view()
+        io = StringIO.StringIO(self.request_data[2])
+        req = webob.Request({'wsgi.input': io})
+        res = view(self.context, req)
+        return FakeHTTPResponse(res.body)
 
+    def close(self):
+        pass
 
 def setupRestApi(localFacility, masterFacility):
-    MyFakeRESTClient = type(
-        'FakeRESTClient', (FakeRESTClient,), {'context': masterFacility})
-    localFacility.clientClass = MyFakeRESTClient
+    localFacility.httpConnFactory = type(
+        'MyFakeHTTPConnection', (FakeHTTPConnection,),
+        {'context': masterFacility})
 
 
 class TestingKeyManagementFacility(facility.KeyManagementFacility):
 
-    def __init__(self):
-        super(TestingKeyManagementFacility, self).__init__()
+    def __init__(self, storage_dir):
+        super(TestingKeyManagementFacility, self).__init__(storage_dir)
         md5Key = md5(KeyEncyptingKey).hexdigest()
-        self[md5Key] = facility.Key(EncryptedEncryptionKey)
+        self[md5Key] = EncryptedEncryptionKey
 
     def generate(self):
         return KeyEncyptingKey

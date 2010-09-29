@@ -19,15 +19,18 @@ __docformat__ = "reStructuredText"
 import sys
 import optparse
 import textwrap
+import urlparse
 
 from keas.kmi.facility import LocalKeyManagementFacility
 
-
 def ping(kmf):
-    client = kmf.clientClass(kmf.url)
-    print client.fullStatus
+    pieces = urlparse.urlparse(kmf.url)
+    conn = kmf.httpConnFactory(pieces.netloc)
+    conn.request('GET', '/')
+    response = conn.getresponse()
+    print response.status, response.reason
     print
-    print client.contents
+    print response.read()
 
 
 def new_key(kmf):
@@ -75,50 +78,58 @@ def decrypt(kmf, kekfile, filename=None):
     sys.stdout.write(decrypted)
 
 
-def main():
-    parser = optparse.OptionParser(textwrap.dedent("""\
-                usage: %prog URL
-                            see if the server is alive
+parser = optparse.OptionParser(textwrap.dedent("""\
+     %prog URL
 
-                       %prog URL -n > key.txt
-                            generate a new key and key encrypting key
+           see if the server is alive
 
-                       %prog URL -e key.txt data.txt > encrypted.txt
-                            encrypt data
+           %prog URL -n > key.txt
+                generate a new key and key encrypting key
 
-                       %prog URL -d key.txt encrytped.txt > data.txt
-                            decrypt data
+           %prog URL -e key.txt data.txt > encrypted.txt
+                encrypt data
 
-                       %prog URL -g key.txt > secretkey.bin
-                            get the secret encryption key
-                """.rstrip()),
-                description="Client for a Key Management Server.")
-    parser.add_option('-n', '--new',
-                      help='generate a new key',
-                      action='store_const', dest='action',
-                      const=new_key)
-    parser.add_option('-g', '--get-key',
-                      help='get key',
-                      action='store_const', dest='action',
-                      const=get_key)
-    parser.add_option('-e', '--encrypt',
-                      help='encrypt data',
-                      action='store_const', dest='action',
-                      const=encrypt)
-    parser.add_option('-d', '--decrypt',
-                      help='decrypt data',
-                      action='store_const', dest='action',
-                      const=decrypt)
-    opts, args = parser.parse_args()
+           %prog URL -d key.txt encrytped.txt > data.txt
+                decrypt data
+
+           %prog URL -g key.txt > secretkey.bin
+                get the secret encryption key
+    """.rstrip()),
+    description="Client for a Key Management Server.")
+parser.add_option(
+    '-n', '--new',
+    help='generate a new key',
+    action='store_const', dest='action',
+    const=new_key)
+parser.add_option(
+    '-g', '--get-key',
+    help='get key',
+    action='store_const', dest='action',
+    const=get_key)
+parser.add_option(
+    '-e', '--encrypt',
+    help='encrypt data',
+    action='store_const', dest='action',
+    const=encrypt)
+parser.add_option(
+    '-d', '--decrypt',
+    help='decrypt data',
+    action='store_const', dest='action',
+    const=decrypt)
+
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+    opts, args = parser.parse_args(argv)
     if not opts.action:
         opts.action = ping
     if not args:
-        parser.error('please specify the KMS server URL')
+        parser.error('Please specify the KMS server URL')
 
     url = args.pop(0)
     kmf = LocalKeyManagementFacility(url)
 
     try:
         opts.action(kmf, *args)
-    except TypeError:
+    except TypeError, err:
         parser.error('incorrect number of arguments')

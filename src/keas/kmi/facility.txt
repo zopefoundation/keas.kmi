@@ -1,0 +1,58 @@
+=========================
+Key Management Facilities
+=========================
+
+The default key managment facility implements the
+``IExtendedKeyManagementFacility``. This interface extends ``IMapping`` so
+that the entire mapping interface is supported
+
+  >>> import tempfile
+  >>> from keas.kmi import facility
+  >>> kmf = facility.KeyManagementFacility(tempfile.mkdtemp())
+
+  >>> key1 = kmf.generate()
+  >>> key2 = kmf.generate()
+  >>> key3 = kmf.generate()
+
+There should be 3 keys now:
+
+  >>> len(kmf)
+  3
+
+And their hash values are the keys of the map:
+
+  >>> kmf.keys()
+  ['...', '...', '...']
+  >>> list(iter(kmf))
+  ['...', '...', '...']
+
+Now let's get one key:
+
+  >>> hash = kmf.keys()[0]
+  >>> len(kmf[hash])
+  64
+
+  >>> len(kmf.get(hash))
+  64
+  >>> kmf.get('xyz', 'default')
+  'default'
+
+We can also check whether a hash is int he facility:
+
+  >>> hash in kmf
+  True
+  >>> 'xyz' in hash
+  False
+
+Of course you can get values and items as well:
+
+  >>> len(kmf.values())
+  3
+  >>> len(kmf.items())
+  3
+
+Finally, one can delete keys using their hash as well.
+
+  >>> del kmf[hash]
+  >>> len(kmf)
+  2

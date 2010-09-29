@@ -4,10 +4,14 @@ Key Management Infrastructure
 
 This package provides a NIST SP 800-57 compliant key management
 infrastructure. Part of this infrastructure is a key management facility that
-provides several services related to keys.
+provides several services related to keys. All keys are stored in a specified
+storage directory.
+
+  >>> import tempfile
+  >>> storage_dir = tempfile.mkdtemp()
 
   >>> from keas.kmi import facility
-  >>> keys = facility.KeyManagementFacility()
+  >>> keys = facility.KeyManagementFacility(storage_dir)
   >>> keys
   <KeyManagementFacility (0)>
 
@@ -67,8 +71,8 @@ You can now use this key encrypting key to extract the encryption keys:
   ...    from md5 import md5
   >>> hash = md5(key)
 
-  >>> keys.get(hash.hexdigest())
-  <Key ...>
+  >>> len(keys.get(hash.hexdigest()))
+  64
 
 Our key management facility also supports the encryption service, which allows
 you to encrypt and decrypt a string given the key encrypting key.
@@ -214,13 +218,10 @@ key.
 So let's have a look at the call:
 
   >>> from keas.kmi import rest
-  >>> from zope.publisher.browser import TestRequest
+  >>> from webob import Request
 
-  >>> request = TestRequest()
-  >>> request.method = 'POST'
-
-  >>> newCall = rest.NewView(keys, request)
-  >>> key3 = newCall()
+  >>> request = Request({})
+  >>> key3 = rest.create_key(keys, request).body
   >>> print key3
   -----BEGIN RSA PRIVATE KEY-----
   ...
@@ -229,7 +230,6 @@ So let's have a look at the call:
 The key is available in the facility of course:
 
   >>> hash = md5(key3)
-
   >>> hash.hexdigest() in keys
   True
 
@@ -240,39 +240,27 @@ We can now fetch the encryption key pair using a `POST` call to this URL::
 The request sends the key encrypting key in its body. The response is the
 encryption key string:
 
-  >>> import cStringIO
-  >>> io = cStringIO.StringIO(key3)
+  >>> request = Request({})
+  >>> request.body = key3
 
-  >>> request = TestRequest(io)
-  >>> request.method = 'POST'
-
-  >>> keyCall = rest.KeyView(keys, request)
-  >>> encKey = keyCall()
-  >>> len(encKey)
+  >>> encKey = rest.get_key(keys, request)
+  >>> len(encKey.body)
   32
 
-If you try to request a nonexistent key, you get a 404 error:
-encryption key string:
+If you try to request a nonexistent key, you get a 404 error: encryption key
+string:
 
-  >>> import cStringIO
-  >>> io = cStringIO.StringIO('xyzzy')
-
-  >>> request = TestRequest(io)
-  >>> request.method = 'POST'
-
-  >>> keyCall = rest.KeyView(keys, request)
-  >>> print keyCall()
+  >>> request.body = 'xxyz'
+  >>> print rest.get_key(keys, request)
   Key not found
-  >>> request.response.getStatus()
-  404
 
 A `GET` request to the root shows us a server status page
 
-  >>> request = TestRequest()
-  >>> request.method = 'GET'
-
-  >>> newCall = rest.StatusView(keys, request)
-  >>> print newCall()
+  >>> print rest.get_status(keys, Request({}))
+  200 OK
+  Content-Type: text/plain
+  Content-Length: 25
+  <BLANKLINE>
   KMS server holding 3 keys
 
 
@@ -283,7 +271,8 @@ The testing facility only manages a single key that is always constant. This
 allows you to install a testing facility globally, not storing the keys in the
 database and still reuse a ZODB over multiple sessions.
 
-  >>> testingKeys = testing.TestingKeyManagementFacility()
+  >>> storage_dir = tempfile.mkdtemp()
+  >>> testingKeys = testing.TestingKeyManagementFacility(storage_dir)
 
 Of course, the key generation service is supported:
 
@@ -299,7 +288,9 @@ However, you will always receive the same key:
   'MIIBOAIBAAJBAL+VS9lDsS9XOaeJppfK9lhxKMRFdcg50MR3aJEQK9rvDEqNwBS9'
   >>> getKeySegment(testingKeys.generate())
   'MIIBOAIBAAJBAL+VS9lDsS9XOaeJppfK9lhxKMRFdcg50MR3aJEQK9rvDEqNwBS9'
-  >>> testingKeys = testing.TestingKeyManagementFacility()
+
+  >>> storage_dir = tempfile.mkdtemp()
+  >>> testingKeys = testing.TestingKeyManagementFacility(storage_dir)
   >>> getKeySegment(testingKeys.generate())
   'MIIBOAIBAAJBAL+VS9lDsS9XOaeJppfK9lhxKMRFdcg50MR3aJEQK9rvDEqNwBS9'
 
@@ -314,3 +305,15 @@ We can also safely en- and decrypt:
   >>> encrypted = testingKeys.encrypt(key, 'Stephan Richter')
   >>> testingKeys.decrypt(key, encrypted)
   'Stephan Richter'
+
+
+Key Holder
+----------
+
+The key holder is a simple class designed to store a key in RAM:
+
+  >>> from keas.kmi import keyholder
+  >>> holder = keyholder.KeyHolder(__file__)
+
+  >>> verify.verifyObject(interfaces.IKeyHolder, holder)
+  True

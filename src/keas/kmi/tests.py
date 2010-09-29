@@ -14,24 +14,22 @@
 """
 $Id$
 """
-import unittest
 import doctest
-
+import tempfile
 import transaction
+import unittest
+
 from zope.app.testing import setup
 from zope.component import provideUtility
-from zope.interface.verify import verifyObject
 
 from keas.kmi.testing import TestingKeyManagementFacility
-from keas.kmi.keyholder import KeyHolder
 from keas.kmi.interfaces import IKeyManagementFacility
-from keas.kmi.interfaces import IKeyHolder
 
 
 def setUpPersistent(test):
     setup.setUpTestAsModule(test, name='keas.kmi.tests.doctestfile')
     setup.placelessSetUp()
-    provideUtility(TestingKeyManagementFacility(),
+    provideUtility(TestingKeyManagementFacility(tempfile.mkdtemp()),
                    provides=IKeyManagementFacility)
 
 
@@ -41,25 +39,16 @@ def tearDownPersistent(test):
     setup.tearDownTestAsModule(test)
 
 
-def doctest_KeyHolder():
-    """Smoke test for the KeyHolder class.
-
-        >>> holder = KeyHolder(__file__)
-        >>> verifyObject(IKeyHolder, holder)
-        True
-
-    """
-
-
 def test_suite():
     return unittest.TestSuite([
         doctest.DocFileSuite(
             'README.txt',
-            setUp=setup.placelessSetUp, tearDown=setup.placelessTearDown,
+            optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS),
+        doctest.DocFileSuite(
+            'facility.txt',
             optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS),
         doctest.DocFileSuite(
             'persistent.txt',
             setUp=setUpPersistent, tearDown=tearDownPersistent,
             optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS),
-        doctest.DocTestSuite(),
     ])

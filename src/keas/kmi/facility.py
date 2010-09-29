@@ -12,51 +12,31 @@
 #
 ##############################################################################
 """Implementation of Key Management Facility
-
-$Id$
 """
 from __future__ import absolute_import
 __docformat__ = "reStructuredText"
 
-import datetime
+import M2Crypto
+import os
+import httplib
+import logging
 import time
+import urlparse
+import zope.interface
+from keas.kmi import interfaces
+
 try:
     from hashlib import md5
 except ImportError:
     from md5 import md5
 
-import M2Crypto
-import persistent
-import zope.interface
-import zope.location
-from z3c.rest import client
-from zope.annotation.interfaces import IAttributeAnnotatable
-from zope.container import btree
-from zope.dublincore import property
-from zope.schema.fieldproperty import FieldProperty
-
-from keas.kmi import interfaces
-
-
-class Key(zope.location.Location, persistent.Persistent):
-    zope.interface.implements(interfaces.IKey, IAttributeAnnotatable)
-
-    created = property.DCProperty('created')
-    creator = property.DCProperty('creator')
-    key = FieldProperty(interfaces.IKey['key'])
-
-    def __init__(self, key):
-        self.key = key
-
-    def __repr__(self):
-        return '<%s %r>' %(self.__class__.__name__, self.key)
-
+logger = logging.getLogger('kmi')
 
 class EncryptionService(object):
 
     cipher = 'aes_256_cbc'
 
-    # Note: decryption fails if you use an empty initialization vector; but it
+    # Note: Decryption fails if you use an empty initialization vector; but it
     # only fails when you restart the Python process.  The length of the
     # initialization vector is assumed to be 16 bytes because that's what
     #   openssl aes-256-cbc -nosalt -P -k 'a'
@@ -90,7 +70,7 @@ class EncryptionService(object):
         return decrypted
 
 
-class KeyManagementFacility(EncryptionService, btree.BTreeContainer):
+class KeyManagementFacility(EncryptionService):
     zope.interface.implements(interfaces.IExtendedKeyManagementFacility)
 
     rsaKeyLength = 512 # The length of the key encrypting key
@@ -99,6 +79,54 @@ class KeyManagementFacility(EncryptionService, btree.BTreeContainer):
     rsaPadding = M2Crypto.RSA.pkcs1_padding
 
     keyLength = rsaKeyLength/16
+
+    def __init__(self, storage_dir):
+        self.storage_dir = storage_dir
+
+    def keys(self):
+        return [filename[:-4] for filename in os.listdir(self.storage_dir)
+                if filename.endswith('.dek')]
+
+    def __iter__(self):
+        return iter(self.keys())
+
+    def __getitem__(self, name):
+        if name+'.dek' not in os.listdir(self.storage_dir):
+            raise KeyError(name)
+        fn = os.path.join(self.storage_dir, name+'.dek')
+        with open(fn, 'rb') as file:
+            return file.read()
+
+    def get(self, name, default=None):
+        try:
+            return self[name]
+        except KeyError:
+            return default
+
+    def values(self):
+        return [value for name, value in self.items()]
+
+    def __len__(self):
+        return len(self.keys())
+
+    def items(self):
+        return [(name, self[name]) for name in self.keys()]
+
+    def __contains__(self, name):
+        return name in self.keys()
+
+    has_key = __contains__
+
+    def __setitem__(self, name, key):
+        fn = os.path.join(self.storage_dir, name+'.dek')
+        with open(fn, 'w') as file:
+            return file.write(key)
+        logger.info('New key added (hash): %s', name)
+
+    def __delitem__(self, name):
+        fn = os.path.join(self.storage_dir, name+'.dek')
+        os.remove(fn)
+        logger.info('Key removed (hash): %s', name)
 
     def generate(self):
         """See interfaces.IKeyGenerationService"""
@@ -117,7 +145,7 @@ class KeyManagementFacility(EncryptionService, btree.BTreeContainer):
         hash.update(privateKey)
         # 5. Save the encryption key
         encryptedKey = rsa.public_encrypt(key, self.rsaPadding)
-        self[hash.hexdigest()] = Key(encryptedKey)
+        self[hash.hexdigest()] = encryptedKey
         # 6. Return the private key encrypting key
         return privateKey
 
@@ -127,11 +155,12 @@ class KeyManagementFacility(EncryptionService, btree.BTreeContainer):
         hash = md5()
         hash.update(key)
         # 2. Extract the encrypted encryption key
-        encryptedKey = self[hash.hexdigest()].key
+        encryptedKey = self[hash.hexdigest()]
         # 3. Decrypt the key.
         rsa = M2Crypto.RSA.load_key_string(key)
         decryptedKey = rsa.private_decrypt(encryptedKey, self.rsaPadding)
         # 4. Return decrypted encryption key
+        logger.info('Encryption key requested: %s', hash.hexdigest())
         return decryptedKey
 
     def __repr__(self):
@@ -143,7 +172,7 @@ class LocalKeyManagementFacility(EncryptionService):
     zope.interface.implements(interfaces.IKeyManagementFacility)
 
     timeout = 3600
-    clientClass = client.RESTClient
+    httpConnFactory = httplib.HTTPSConnection
 
     def __init__(self, url):
         self.url = url
@@ -151,18 +180,21 @@ class LocalKeyManagementFacility(EncryptionService):
 
     def generate(self):
         """See interfaces.IKeyGenerationService"""
-        client = self.clientClass(self.url)
-        client.post('/new')
-        return client.contents
+        pieces = urlparse.urlparse(self.url)
+        conn = self.httpConnFactory(pieces.netloc)
+        conn.request('POST', '/new', '', {})
+        response = conn.getresponse()
+        return response.read()
 
     def getEncryptionKey(self, key):
         """Given the key encrypting key, get the encryption key."""
         if (key in self._cache and
             self._cache[key][0] + self.timeout > time.time()):
             return self._cache[key][1]
-        client = self.clientClass(self.url)
-        client.post('/key', key, headers={'content-type': 'text/plain'})
-        encryptionKey = client.contents
+        pieces = urlparse.urlparse(self.url)
+        conn = self.httpConnFactory(pieces.netloc)
+        conn.request('POST', '/key', key, {'content-type': 'text/plain'})
+        encryptionKey = conn.getresponse().read()
         self._cache[key] = (time.time(), encryptionKey)
         return encryptionKey
 

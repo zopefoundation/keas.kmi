@@ -22,7 +22,7 @@ def read(*rnames):
 
 setup (
     name='keas.kmi',
-    version = '1.1.2dev',
+    version = '2.0.0dev',
     author = "Stephan Richter and the Zope Community",
     author_email = "zope-dev@zope.org",
     description = "A Key Management Infrastructure",
@@ -36,7 +36,7 @@ setup (
         read('CHANGES.txt')
         ),
     license = "ZPL 2.1",
-    keywords = "zope3 security key management infrastructure nist 800-57",
+    keywords = "security key management infrastructure nist 800-57",
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
@@ -46,7 +46,7 @@ setup (
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Topic :: Internet :: WWW/HTTP',
-        'Framework :: Zope3'],
+        'Framework :: Repoze'],
     url = 'http://pypi.python.org/pypi/keas.kmi',
     packages = find_packages('src'),
     include_package_data = True,
@@ -60,14 +60,9 @@ setup (
         ),
     install_requires = [
         'M2Crypto',
-        'ZODB3',
+        'repoze.bfg',
         'setuptools',
-        'z3c.rest',
-        'zope.app.wsgi',
-        'zope.annotation',
-        'zope.component',
-        'zope.container',
-        'zope.dublincore',
+        'transaction',
         'zope.interface',
         'zope.schema',
         ],

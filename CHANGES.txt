@@ -2,10 +2,14 @@
 CHANGES
 =======
 
-1.1.2 (unreleased)
+2.0.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Refactored REST server to be a simple repoze.bfg application.
+
+- The encrypted data encrypting keys (DEKs) are now stored in a directory
+  instead of the ZODB. This increases transparency in the data store and makes
+  backups easier.
 
 
 1.1.1 (2010-08-27)

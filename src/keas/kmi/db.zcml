@@ -1,7 +1,0 @@
-<configure xmlns="http://namespaces.zope.org/zope">
-
-  <subscriber
-      handler=".db.bootstrapKeyManagementFacility"
-      />
-
-</configure>

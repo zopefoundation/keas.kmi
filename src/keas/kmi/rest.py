@@ -12,42 +12,25 @@
 #
 ##############################################################################
 """REST-API to master key management facility
-
-$Id$
 """
-from zope.publisher.browser import BrowserPage
+from webob import Response, exc
 
-class RestView(BrowserPage):
+def get_status(context, request):
+    return Response(
+        'KMS server holding %d keys' %len(context),
+        headerlist=[('Content-Type', 'text/plain')])
 
-    def __call__(self):
-        method = self.request.method
-        if not hasattr(self, method):
-            self.request.response.setStatus(405)
-            return 'Method not allowed.'
-        return getattr(self, method)()
+def create_key(context, request):
+    return Response(
+        context.generate(),
+        headerlist=[('Content-Type', 'text/plain')])
 
-class StatusView(RestView):
-
-    def GET(self):
-        self.request.response.setHeader('content-type', 'text/plain')
-        return 'KMS server holding %d keys' % len(self.context)
-
-class NewView(RestView):
-
-    def POST(self):
-        self.request.response.setHeader('content-type', 'text/plain')
-        return self.context.generate()
-
-class KeyView(RestView):
-
-    def POST(self):
-        stream = self.request.bodyStream.getCacheStream()
-        stream.seek(0)
-        key = stream.read()
-        self.request.response.setHeader('content-type', 'text/plain')
-        try:
-            return self.context.getEncryptionKey(key)
-        except KeyError:
-            self.request.response.setStatus(404)
-            return 'Key not found'
+def get_key(context, request):
+    key = request.body
+    try:
+        return Response(
+            context.getEncryptionKey(key),
+            headerlist=[('Content-Type', 'text/plain')])
+    except KeyError:
+        return exc.HTTPNotFound('Key not found')
 

@@ -11,32 +11,12 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""
-$Id$
+"""Key Management Interfaces
 """
 __docformat__ = "reStructuredText"
 import zope.interface
 import zope.schema
-from zope.container import interfaces
-
-
-class IKey(zope.interface.Interface):
-    """Encryption Key"""
-
-    created = zope.schema.Datetime(
-        title=u'Creation Date/Time',
-        description=u'The date/time the key pair was created.',
-        required=True)
-
-    creator = zope.schema.TextLine(
-        title=u'Creator',
-        description=u'The principal/user that requested the new key.',
-        required=True)
-
-    key = zope.schema.Bytes(
-        title=u'Key',
-        description=u'The key used to encrypt and decrypt the data.',
-        required=True)
+from zope.interface.common import mapping
 
 
 class IEncryptionService(zope.interface.Interface):
@@ -65,11 +45,10 @@ class IKeyManagementFacility(IEncryptionService, IKeyGenerationService):
     """
 
 class IExtendedKeyManagementFacility(IKeyManagementFacility,
-                                     interfaces.IContainer):
+                                     mapping.IMapping):
     """Extended Key Management Facility.
 
-    This facility also also the management of the keys via Python's mapping
-    API.
+    This facility also allows access of the keys via Python's mapping API.
     """
 
 
