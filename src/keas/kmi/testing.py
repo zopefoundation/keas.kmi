@@ -62,10 +62,6 @@ class FakeHTTPResponse(object):
             self.fp = None
         return data
 
-    def getheader(self, name):
-        if name.lower() == 'content-length':
-            return str(len(self.fp.getvalue()))
-
     def close(self):
         pass
 
@@ -85,21 +81,13 @@ class FakeHTTPConnection(object):
         if url == '/new':
             view = rest.create_key
         elif url == '/key':
-            if self.request_data[3].get('content-type') != 'text/plain':
-                # ensure we don't trip on
-                # http://trac.pythonpaste.org/pythonpaste/ticket/294
-                raise ValueError('bad content type')
             view = rest.get_key
-        else:
-            raise ValueError(url)
 
         io = StringIO.StringIO(self.request_data[2])
         req = webob.Request({'wsgi.input': io})
         res = view(self.context, req)
         return FakeHTTPResponse(res.body)
 
-    def close(self):
-        pass
 
 def setupRestApi(localFacility, masterFacility):
     localFacility.httpConnFactory = type(

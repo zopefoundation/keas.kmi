@@ -82,6 +82,7 @@ class KeyManagementFacility(EncryptionService):
 
     def __init__(self, storage_dir):
         self.storage_dir = storage_dir
+        self.__cache = {}
 
     def keys(self):
         return [filename[:-4] for filename in os.listdir(self.storage_dir)
@@ -91,11 +92,15 @@ class KeyManagementFacility(EncryptionService):
         return iter(self.keys())
 
     def __getitem__(self, name):
+        if name in self.__cache:
+            return self.__cache[name]
         if name+'.dek' not in os.listdir(self.storage_dir):
             raise KeyError(name)
         fn = os.path.join(self.storage_dir, name+'.dek')
         with open(fn, 'rb') as file:
-            return file.read()
+            data = file.read()
+            self.__cache[name] = data
+            return data
 
     def get(self, name, default=None):
         try:
@@ -120,10 +125,12 @@ class KeyManagementFacility(EncryptionService):
     def __setitem__(self, name, key):
         fn = os.path.join(self.storage_dir, name+'.dek')
         with open(fn, 'w') as file:
-            return file.write(key)
+            file.write(key)
         logger.info('New key added (hash): %s', name)
 
     def __delitem__(self, name):
+        if name in self.__cache:
+            del self.__cache[name]
         fn = os.path.join(self.storage_dir, name+'.dek')
         os.remove(fn)
         logger.info('Key removed (hash): %s', name)
@@ -184,7 +191,9 @@ class LocalKeyManagementFacility(EncryptionService):
         conn = self.httpConnFactory(pieces.netloc)
         conn.request('POST', '/new', '', {})
         response = conn.getresponse()
-        return response.read()
+        data = response.read()
+        response.close()
+        return data
 
     def getEncryptionKey(self, key):
         """Given the key encrypting key, get the encryption key."""
@@ -194,7 +203,9 @@ class LocalKeyManagementFacility(EncryptionService):
         pieces = urlparse.urlparse(self.url)
         conn = self.httpConnFactory(pieces.netloc)
         conn.request('POST', '/key', key, {'content-type': 'text/plain'})
-        encryptionKey = conn.getresponse().read()
+        response = conn.getresponse()
+        encryptionKey = response.read()
+        response.close()
         self._cache[key] = (time.time(), encryptionKey)
         return encryptionKey
 

@@ -11,6 +11,8 @@ CHANGES
   instead of the ZODB. This increases transparency in the data store and makes
   backups easier.
 
+- Added caching to directory-based facility, so we do not need to read files
+  all the time.
 
 1.1.1 (2010-08-27)
 ------------------
