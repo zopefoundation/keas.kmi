@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-2.0.0 (unreleased)
+2.0.0 (2010-09-29)
 ------------------
 
 - Refactored REST server to be a simple repoze.bfg application.
