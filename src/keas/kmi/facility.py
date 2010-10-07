@@ -73,6 +73,8 @@ class EncryptionService(object):
 class KeyManagementFacility(EncryptionService):
     zope.interface.implements(interfaces.IExtendedKeyManagementFacility)
 
+    timeout = 3600
+
     rsaKeyLength = 512 # The length of the key encrypting key
     rsaKeyExponent = 161 # Should be sufficiently high and non-symmetric
     rsaPassphrase = 'key management facility'
@@ -82,7 +84,8 @@ class KeyManagementFacility(EncryptionService):
 
     def __init__(self, storage_dir):
         self.storage_dir = storage_dir
-        self.__cache = {}
+        self.__data_cache = {}
+        self.__dek_cache = {}
 
     def keys(self):
         return [filename[:-4] for filename in os.listdir(self.storage_dir)
@@ -92,14 +95,14 @@ class KeyManagementFacility(EncryptionService):
         return iter(self.keys())
 
     def __getitem__(self, name):
-        if name in self.__cache:
-            return self.__cache[name]
+        if name in self.__data_cache:
+            return self.__data_cache[name]
         if name+'.dek' not in os.listdir(self.storage_dir):
             raise KeyError(name)
         fn = os.path.join(self.storage_dir, name+'.dek')
         with open(fn, 'rb') as file:
             data = file.read()
-            self.__cache[name] = data
+            self.__data_cache[name] = data
             return data
 
     def get(self, name, default=None):
@@ -129,8 +132,8 @@ class KeyManagementFacility(EncryptionService):
         logger.info('New key added (hash): %s', name)
 
     def __delitem__(self, name):
-        if name in self.__cache:
-            del self.__cache[name]
+        if name in self.__data_cache:
+            del self.__data_cache[name]
         fn = os.path.join(self.storage_dir, name+'.dek')
         os.remove(fn)
         logger.info('Key removed (hash): %s', name)
@@ -161,13 +164,21 @@ class KeyManagementFacility(EncryptionService):
         # 1. Create the lookup key in the container
         hash = md5()
         hash.update(key)
-        # 2. Extract the encrypted encryption key
-        encryptedKey = self[hash.hexdigest()]
-        # 3. Decrypt the key.
+        hash_key = hash.hexdigest()
+        # 2. Try to look up the key in the cache first.
+        if (hash_key in self.__dek_cache and
+            self.__dek_cache[hash_key][0] + self.timeout > time.time()):
+            return self.__dek_cache[hash_key][1]
+        # 3. Extract the encrypted encryption key
+        encryptedKey = self[hash_key]
+        # 4. Decrypt the key.
         rsa = M2Crypto.RSA.load_key_string(key)
         decryptedKey = rsa.private_decrypt(encryptedKey, self.rsaPadding)
-        # 4. Return decrypted encryption key
-        logger.info('Encryption key requested: %s', hash.hexdigest())
+        # 5. Return decrypted encryption key
+        logger.info('Encryption key requested: %s', hash_key)
+        # 6. Add the key to the cache
+        self.__dek_cache[hash_key] = (time.time(), decryptedKey)
+        # 7. Return the key
         return decryptedKey
 
     def __repr__(self):
@@ -183,7 +194,7 @@ class LocalKeyManagementFacility(EncryptionService):
 
     def __init__(self, url):
         self.url = url
-        self._cache = {}
+        self.__cache = {}
 
     def generate(self):
         """See interfaces.IKeyGenerationService"""
@@ -197,16 +208,16 @@ class LocalKeyManagementFacility(EncryptionService):
 
     def getEncryptionKey(self, key):
         """Given the key encrypting key, get the encryption key."""
-        if (key in self._cache and
-            self._cache[key][0] + self.timeout > time.time()):
-            return self._cache[key][1]
+        if (key in self.__cache and
+            self.__cache[key][0] + self.timeout > time.time()):
+            return self.__cache[key][1]
         pieces = urlparse.urlparse(self.url)
         conn = self.httpConnFactory(pieces.netloc)
         conn.request('POST', '/key', key, {'content-type': 'text/plain'})
         response = conn.getresponse()
         encryptionKey = response.read()
         response.close()
-        self._cache[key] = (time.time(), encryptionKey)
+        self.__cache[key] = (time.time(), encryptionKey)
         return encryptionKey
 
     def __repr__(self):

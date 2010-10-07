@@ -69,9 +69,9 @@ You can now use this key encrypting key to extract the encryption keys:
   ...    from hashlib import md5
   ... except ImportError:
   ...    from md5 import md5
-  >>> hash = md5(key)
+  >>> hash_key = md5(key).hexdigest()
 
-  >>> len(keys.get(hash.hexdigest()))
+  >>> len(keys.get(hash_key))
   64
 
 Our key management facility also supports the encryption service, which allows
@@ -93,6 +93,34 @@ We can also decrypt the data.
 
 And that's pretty much all there is to it. Most of the complicated
 crypto-related work happens under the hood, transparent to the user.
+
+One final note. Once the data encrypting key is looked up and decrypted, it is
+cached, since constantly decrypting the the DEK is expensive.
+
+  >>> hash_key in keys._KeyManagementFacility__dek_cache
+  True
+
+A timeout (in seconds) controls when a key must be looked up:
+
+  >>> keys.timeout
+  3600
+
+Let's now force a reload by setting the timeout to zero:
+
+  >>> keys.timeout = 0
+
+The cache is a dictionary of key encrypting key to a 2-tuple that contains the
+date/time the key has been fetched and the unencrypted DEK.
+
+  >>> firstTime = keys._KeyManagementFacility__dek_cache[hash_key][0]
+
+  >>> keys.decrypt(key, encrypted)
+  'Stephan Richter'
+
+  >>> secondTime = keys._KeyManagementFacility__dek_cache[hash_key][0]
+
+  >>> firstTime < secondTime
+  True
 
 
 The Local Key Management Facility
@@ -155,7 +183,7 @@ operation locally. This approach has the following advantages:
 
 In this implementation, we do cache the keys in a private attribute:
 
-  >>> key in localKeys._cache
+  >>> key in localKeys._LocalKeyManagementFacility__cache
   True
 
 A timeout (in seconds) controls when a key must be refetched:
@@ -171,12 +199,12 @@ The cache is a dictionary of key encrypting key to a 3-tuple that contains the
 date/time the key has been fetched, the encryption (public) key, and the
 decryption (private) key.
 
-  >>> firstTime = localKeys._cache[key][0]
+  >>> firstTime = localKeys._LocalKeyManagementFacility__cache[key][0]
 
   >>> localKeys.decrypt(key, encrypted)
   'Stephan Richter'
 
-  >>> secondTime = localKeys._cache[key][0]
+  >>> secondTime = localKeys._LocalKeyManagementFacility__cache[key][0]
 
   >>> firstTime < secondTime
   True

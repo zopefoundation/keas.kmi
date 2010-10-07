@@ -2,10 +2,13 @@
 CHANGES
 =======
 
-2.0.1 (unreleased)
+2.1.0 (2010-10-07)
 ------------------
 
-- No changes yet.
+- Added a cache for unencrypted DEKs in the key management facility, like it
+  was already done for the local key management facility. This increases
+  encryption and decryption performance by an order of magnitude from roughly
+  2ms to 0.2ms.
 
 2.0.0 (2010-09-29)
 ------------------
