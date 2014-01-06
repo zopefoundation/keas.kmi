@@ -1,0 +1,9 @@
+include bootstrap.py
+include buildout.cfg
+include server.ini
+include zope.conf
+include .travis.yml
+include generate-sample-cert.sh
+include sample.pem
+include *.txt
+recursive-include src/keas/kmi *.zcml *.py *.txt
