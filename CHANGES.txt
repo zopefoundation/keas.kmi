@@ -2,10 +2,22 @@
 CHANGES
 =======
 
-2.1.1 (unreleased)
+3.0.0 (unreleased)
 ------------------
 
-- No changes yet.
+- Switched from `M2Crypto` to `PyCrypto`, since `M2Crypto` is not maintained
+  anymore.
+
+- Switched from deprecated `repoze.bfg` to `pyramid`.
+
+NOTE: While I found code online to make the switch from `PyCrypto` to
+`M2Crypto` backwards compatible, I have not tested that functionality. Please
+try this on your data and let me know if you have issues.
+
+NOTE 2: `PyCrypto` does not allow 512-bit RSA keys, so I increased the key
+size to 2048 bits. Old 512-bit keys should still work, but new ones will be
+always larger now.
+
 
 2.1.0 (2010-10-07)
 ------------------

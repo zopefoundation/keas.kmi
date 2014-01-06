@@ -167,18 +167,3 @@ The converted state is stored in the DB
     >>> pwd = conn3.root()['pwd']
     >>> pwd.password
     'xyzzy'
-
-
-Encryption Stability
---------------------
-
-Once encrypted, the same string can always be decrypted with the same key:
-
-    >>> pickle.loads("ccopy_reg\n__newobj__\np1\n(ckeas.kmi.tests.doctestfile\nUserPrivateData\np2\ntRp3\n(S'h:(\\xf7\\x81\\x07<\\x96\\xb2)\\xd2\\x11\\x80\\x16\\xcdo\\xec\\xe7\\xbfc\\x9dx^\\xfa\\xd0)z\\x91\\x17\\xd5o\\xe8(jH\\xfc{?\\x10k\\x9e\\x90D\\xbew\\xc6]r\\xd1\\xc5\\xfb\\xeaAT\\x16\\xd1\\xa4\\x07\\xaf\\x12\\xe3\\xe5s\\xb5'\n(ltb.")
-    <UserPrivateData Stephan Richter 123456789>
-
-This is a regression test for a problem we had with M2Crypto: if you pass an
-empty `initializationVector` to `M2Crypto.EVP.Cipher`, it propably uses a
-chunk of uninitialized memory and ends up not being able to decrypt the
-pickles after you restart the Python process.
-

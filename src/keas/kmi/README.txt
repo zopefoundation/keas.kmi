@@ -72,7 +72,7 @@ You can now use this key encrypting key to extract the encryption keys:
   >>> hash_key = md5(key).hexdigest()
 
   >>> len(keys.get(hash_key))
-  64
+  256
 
 Our key management facility also supports the encryption service, which allows
 you to encrypt and decrypt a string given the key encrypting key.
@@ -273,7 +273,7 @@ encryption key string:
 
   >>> encKey = rest.get_key(keys, request)
   >>> len(encKey.body)
-  32
+  128
 
 If you try to request a nonexistent key, you get a 404 error: encryption key
 string:

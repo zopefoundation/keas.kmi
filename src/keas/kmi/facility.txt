@@ -30,10 +30,10 @@ Now let's get one key:
 
   >>> hash = kmf.keys()[0]
   >>> len(kmf[hash])
-  64
+  256
 
   >>> len(kmf.get(hash))
-  64
+  256
   >>> kmf.get('xyz', 'default')
   'default'
 

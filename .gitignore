@@ -5,4 +5,5 @@ src/*.egg-info
 bin
 coverage
 develop-eggs
+keys
 parts

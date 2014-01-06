@@ -13,9 +13,9 @@
 ##############################################################################
 """WSGI application for the Key Management Server.
 """
-import keas.kmi
 import os
-from repoze.bfg.router import make_app
+import pyramid.config
+import keas.kmi
 from keas.kmi import facility
 
 FACILITY = None
@@ -29,5 +29,9 @@ def application_factory(global_config, **kw):
         os.mkdir(storage_dir)
     global FACILITY
     FACILITY = facility.KeyManagementFacility(storage_dir)
-    return make_app(get_facility, keas.kmi, options=kw)
+    config =  pyramid.config.Configurator(
+        root_factory=get_facility, package=keas.kmi)
+    config.include('pyramid_zcml')
+    config.load_zcml('configure.zcml')
+    return config.make_wsgi_app()
 

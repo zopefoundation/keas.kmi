@@ -58,8 +58,9 @@ setup (
             ],
         ),
     install_requires = [
-        'M2Crypto',
-        'repoze.bfg',
+        'pycrypto',
+        'pyramid',
+        'pyramid_zcml',
         'setuptools',
         'transaction',
         'zope.interface',

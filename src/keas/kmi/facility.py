@@ -16,10 +16,13 @@
 from __future__ import absolute_import
 __docformat__ = "reStructuredText"
 
-import M2Crypto
-import os
+import Crypto.Cipher
+import Crypto.Cipher.PKCS1_v1_5
+import Crypto.PublicKey.RSA
+import binascii
 import httplib
 import logging
+import os
 import time
 import urlparse
 import zope.interface
@@ -34,7 +37,8 @@ logger = logging.getLogger('kmi')
 
 class EncryptionService(object):
 
-    cipher = 'aes_256_cbc'
+    CipherFactory = Crypto.Cipher.AES
+    CipherMode = Crypto.Cipher.AES.MODE_CBC
 
     # Note: Decryption fails if you use an empty initialization vector; but it
     # only fails when you restart the Python process.  The length of the
@@ -43,31 +47,50 @@ class EncryptionService(object):
     # prints if you execute it on the command line
     initializationVector = '0123456789ABCDEF'
 
+    def _pkcs7Encode(self, text, k=16):
+        n = k - (len(text) % k)
+        return text + binascii.unhexlify(n * ("%02x" % n))
+
+    def _pkcs7Decode(self, text, k=16):
+        n = int(binascii.hexlify(text[-1]), 16)
+        if n > k:
+            raise ValueError("Input is not padded or padding is corrupt")
+        return text[:-n]
+
+    _bytesToKeySalt = '12345678'
+    def _bytesToKey(self, data):
+        # Simplified version of M2Crypto.m2.bytes_to_key().
+        assert len(self._bytesToKeySalt) == 8, len(self._bytesToKeySalt)
+        data += self._bytesToKeySalt
+        key = md5(data).digest()
+        key += md5(key + data).digest()
+        return key
+
     def encrypt(self, key, data):
         """See interfaces.IEncryptionService"""
         # 1. Extract the encryption key
-        encryptionKey = self.getEncryptionKey(key)
+        encryptionKey = self._bytesToKey(self.getEncryptionKey(key))
         # 2. Create a cipher object
-        cipher = M2Crypto.EVP.Cipher(
-            self.cipher, encryptionKey, self.initializationVector, 1)
-        # 3. Feed the data to the cipher
-        encrypted = cipher.update(data)
-        encrypted += cipher.final()
-        # 4. Return encrypted data
-        return encrypted
+        cipher = self.CipherFactory.new(
+            key=encryptionKey, mode=self.CipherMode,
+            IV=self.initializationVector)
+        # 3. Apply padding.
+        data = self._pkcs7Encode(data)
+        # 4. Encrypt the data and return it.
+        return cipher.encrypt(data)
 
     def decrypt(self, key, data):
         """See interfaces.IEncryptionService"""
         # 1. Extract the encryption key
-        encryptionKey = self.getEncryptionKey(key)
+        encryptionKey = self._bytesToKey(self.getEncryptionKey(key))
         # 2. Create a cipher object
-        cipher = M2Crypto.EVP.Cipher(
-            self.cipher, encryptionKey, self.initializationVector, 0)
-        # 3. Feed the data to the cipher
-        decrypted = cipher.update(data)
-        decrypted += cipher.final()
-        # 4. Return encrypted data
-        return decrypted
+        cipher = self.CipherFactory.new(
+            key=encryptionKey, mode=self.CipherMode,
+            IV=self.initializationVector)
+        # 3. Decrypt the data.
+        text = cipher.decrypt(data)
+        # 4. Remove padding and return result.
+        return self._pkcs7Decode(text)
 
 
 class KeyManagementFacility(EncryptionService):
@@ -75,10 +98,9 @@ class KeyManagementFacility(EncryptionService):
 
     timeout = 3600
 
-    rsaKeyLength = 512 # The length of the key encrypting key
-    rsaKeyExponent = 161 # Should be sufficiently high and non-symmetric
+    rsaKeyLength = 2048 # The length of the key encrypting key
+    rsaKeyExponent = 65537 # Should be sufficiently high and non-symmetric
     rsaPassphrase = 'key management facility'
-    rsaPadding = M2Crypto.RSA.pkcs1_padding
 
     keyLength = rsaKeyLength/16
 
@@ -141,20 +163,17 @@ class KeyManagementFacility(EncryptionService):
     def generate(self):
         """See interfaces.IKeyGenerationService"""
         # 1. Generate the private/public RSA key encrypting key
-        rsa = M2Crypto.RSA.gen_key(
-            self.rsaKeyLength, self.rsaKeyExponent,
-            lambda x: None)
+        rsa = Crypto.PublicKey.RSA.generate(
+            self.rsaKeyLength, e=self.rsaKeyExponent)
         # 2. Extract the private key from the RSA object
-        buf = M2Crypto.BIO.MemoryBuffer('')
-        rsa.save_key_bio(buf, None, lambda x: self.rsaPassphrase)
-        privateKey = buf.getvalue()
+        privateKey = rsa.exportKey(passphrase=self.rsaPassphrase)
         # 3. Generate the encryption key
-        key = M2Crypto.Rand.rand_bytes(self.keyLength)
+        key = Crypto.Random.new().read(self.keyLength)
         # 4. Create the lookup key in the container
         hash = md5()
         hash.update(privateKey)
         # 5. Save the encryption key
-        encryptedKey = rsa.public_encrypt(key, self.rsaPadding)
+        encryptedKey = Crypto.Cipher.PKCS1_v1_5.new(rsa).encrypt(key)
         self[hash.hexdigest()] = encryptedKey
         # 6. Return the private key encrypting key
         return privateKey
@@ -172,8 +191,12 @@ class KeyManagementFacility(EncryptionService):
         # 3. Extract the encrypted encryption key
         encryptedKey = self[hash_key]
         # 4. Decrypt the key.
-        rsa = M2Crypto.RSA.load_key_string(key)
-        decryptedKey = rsa.private_decrypt(encryptedKey, self.rsaPadding)
+        rsa = Crypto.PublicKey.RSA.importKey(key, self.rsaPassphrase)
+        error = object()
+        decryptedKey = Crypto.Cipher.PKCS1_v1_5.new(rsa).decrypt(
+            encryptedKey, error)
+        if decryptedKey is error:
+            raise ValueError('Error while decrypting key.')
         # 5. Return decrypted encryption key
         logger.info('Encryption key requested: %s', hash_key)
         # 6. Add the key to the cache
