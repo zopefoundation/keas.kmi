@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.0.0 (unreleased)
+3.0.0 (2014-01-06)
 ------------------
 
 - Switched from `M2Crypto` to `PyCrypto`, since `M2Crypto` is not maintained
