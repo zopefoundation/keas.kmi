@@ -10,7 +10,8 @@ To get started do::
 The server will come up on port 8080. You can create a new key encrypting key
 using::
 
-  $ wget https://localhost:8080/new -O kek.dat --ca-certificate sample.pem
+  $ wget https://localhost:8080/new -O kek.dat --ca-certificate sample.pem \
+         --post-data=""
 
 or, if you want a more convenient tool::
 
@@ -19,7 +20,8 @@ or, if you want a more convenient tool::
 The data encryption key can now be retrieved by posting the KEK to another
 URL::
 
-  $ wget https://localhost:8080/key --header 'Content-Type: text/plain' --post-file kek.dat -O datakey.dat --ca-certificate sample.pem
+  $ wget https://localhost:8080/key --header 'Content-Type: text/plain' \
+         --post-file kek.dat -O datakey.dat --ca-certificate sample.pem
 
 or ::
 
