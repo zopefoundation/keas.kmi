@@ -5,7 +5,7 @@ CHANGES
 3.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Bumped the setuptools version in buildout.cfg.
 
 
 3.0.0 (2014-01-06)
