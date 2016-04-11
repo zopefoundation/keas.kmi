@@ -5,7 +5,9 @@ CHANGES
 3.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add an implementation of encrypt_file and decrypt_file.
+  This allows chuncked encoding and decoding of files.
+  [pcdummy]
 
 
 3.0.0 (2014-01-06)

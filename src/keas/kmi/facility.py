@@ -14,15 +14,17 @@
 """Implementation of Key Management Facility
 """
 from __future__ import absolute_import
-__docformat__ = "reStructuredText"
 
 import Crypto.Cipher
 import Crypto.Cipher.PKCS1_v1_5
 import Crypto.PublicKey.RSA
+from Crypto.Random import random
 import binascii
 import httplib
 import logging
 import os
+import shutil
+import struct
 import time
 import urlparse
 import zope.interface
@@ -33,9 +35,13 @@ try:
 except ImportError:
     from md5 import md5
 
+__docformat__ = "reStructuredText"
+
 logger = logging.getLogger('kmi')
 
+
 class EncryptionService(object):
+    zope.interface.implements(interfaces.IEncryptionService)
 
     CipherFactory = Crypto.Cipher.AES
     CipherMode = Crypto.Cipher.AES.MODE_CBC
@@ -79,6 +85,58 @@ class EncryptionService(object):
         # 4. Encrypt the data and return it.
         return cipher.encrypt(data)
 
+    def encrypt_file(self, key, fsrc, fdst, chunksize=24*1024):
+        """ Encrypts a file with the given key.
+
+        :param key: The encryption key.
+        :param fsrc: File descriptor to read from (opened with 'rb')
+        :param fdst: File descriptor to write to (opened with 'wb')
+        :param chunksize: Sets the size of the chunk which the function
+                          uses to read and encrypt the file. Larger chunk
+                          sizes can be faster for some files and machines.
+                          chunksize must be divisible by 16.
+        """
+        # 1. Extract the encryption key
+        encryptionKey = self._bytesToKey(self.getEncryptionKey(key))
+
+        # 2. Create a random initialization vector
+        iv = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
+
+        # 3. Create a cipher object
+        cipher = self.CipherFactory.new(
+            key=encryptionKey, mode=self.CipherMode,
+            IV=iv
+        )
+
+        # 4. Write the encryption marker.
+        fdst.write('.e')
+
+        # 5. Write a spacer for the later filesize.
+        fdst.write(struct.pack('<Q', 0))
+
+        # 6. Write the initialization vector.
+        fdst.write(iv)
+
+        # 7. Read plain and write the encrypted file.
+        filesize = 0
+        while True:
+            chunk = fsrc.read(chunksize)
+            if len(chunk) == 0:
+                break
+
+            filesize += len(chunk)
+
+            # Apply padding.
+            if len(chunk) % 16 != 0:
+                chunk += ' ' * (16 - len(chunk) % 16)
+
+            # Write the chunk
+            fdst.write(cipher.encrypt(chunk))
+
+        # 8. Write the correct filesize.
+        fdst.seek(2)
+        fdst.write(struct.pack('<Q', filesize))
+
     def decrypt(self, key, data):
         """See interfaces.IEncryptionService"""
         # 1. Extract the encryption key
@@ -88,9 +146,43 @@ class EncryptionService(object):
             key=encryptionKey, mode=self.CipherMode,
             IV=self.initializationVector)
         # 3. Decrypt the data.
-        text = cipher.decrypt(data)
+        try:
+            text = cipher.decrypt(data)
+        except ValueError:
+            return data
+
         # 4. Remove padding and return result.
         return self._pkcs7Decode(text)
+
+    def decrypt_file(self, key, fsrc, fdst, chunksize=24*1024):
+        """ Decrypts a file using with the given key.
+        Parameters are similar to encrypt_file.
+        """
+        header = str(fsrc.read(2))
+        if header != '.e':
+            # File isn't encrypted just copy fsrc to fdst.
+            fsrc.seek(0)
+            shutil.copyfileobj(fsrc, fdst)
+            return
+
+        origsize = struct.unpack('<Q', fsrc.read(struct.calcsize('Q')))[0]
+        iv = fsrc.read(16)
+
+        # 1. Extract the encryption key
+        encryptionKey = self._bytesToKey(self.getEncryptionKey(key))
+        # 2. Create a cipher object
+        cipher = self.CipherFactory.new(
+            key=encryptionKey, mode=self.CipherMode,
+            IV=iv
+        )
+
+        while True:
+            chunk = fsrc.read(chunksize)
+            if len(chunk) == 0:
+                break
+            fdst.write(cipher.decrypt(chunk))
+
+        fdst.truncate(origsize)
 
 
 class KeyManagementFacility(EncryptionService):
