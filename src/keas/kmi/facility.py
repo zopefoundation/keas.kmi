@@ -23,7 +23,6 @@ import binascii
 import httplib
 import logging
 import os
-import shutil
 import struct
 import time
 import urlparse
@@ -90,7 +89,8 @@ class EncryptionService(object):
 
         :param key: The encryption key.
         :param fsrc: File descriptor to read from (opened with 'rb')
-        :param fdst: File descriptor to write to (opened with 'wb')
+        :param fdst: File descriptor to write to (opened with 'wb').
+                     Its an append operation.
         :param chunksize: Sets the size of the chunk which the function
                           uses to read and encrypt the file. Larger chunk
                           sizes can be faster for some files and machines.
@@ -108,8 +108,9 @@ class EncryptionService(object):
             IV=iv
         )
 
-        # 4. Write the encryption marker.
-        fdst.write('.e')
+        # 4. Get the current position so we can seek later back to it
+        #    so we can write the filesize.
+        fdst_startpos = fdst.tell()
 
         # 5. Write a spacer for the later filesize.
         fdst.write(struct.pack('<Q', 0))
@@ -134,11 +135,18 @@ class EncryptionService(object):
             fdst.write(cipher.encrypt(chunk))
 
         # 8. Write the correct filesize.
-        fdst.seek(2)
+        fdst_endpos = fdst.tell()
+        fdst.seek(fdst_startpos)
         fdst.write(struct.pack('<Q', filesize))
 
+        # 9. Seek back to end of the file
+        fdst.seek(fdst_endpos)
+
     def decrypt(self, key, data):
-        """See interfaces.IEncryptionService"""
+        """See interfaces.IEncryptionService
+
+        :raises ValueError: if it can't decrypt the data.
+        """
         # 1. Extract the encryption key
         encryptionKey = self._bytesToKey(self.getEncryptionKey(key))
         # 2. Create a cipher object
@@ -146,10 +154,7 @@ class EncryptionService(object):
             key=encryptionKey, mode=self.CipherMode,
             IV=self.initializationVector)
         # 3. Decrypt the data.
-        try:
-            text = cipher.decrypt(data)
-        except ValueError:
-            return data
+        text = cipher.decrypt(data)
 
         # 4. Remove padding and return result.
         return self._pkcs7Decode(text)
@@ -157,14 +162,9 @@ class EncryptionService(object):
     def decrypt_file(self, key, fsrc, fdst, chunksize=24*1024):
         """ Decrypts a file using with the given key.
         Parameters are similar to encrypt_file.
-        """
-        header = str(fsrc.read(2))
-        if header != '.e':
-            # File isn't encrypted just copy fsrc to fdst.
-            fsrc.seek(0)
-            shutil.copyfileobj(fsrc, fdst)
-            return
 
+        :raises ValueError: if it can't decrypt the file.
+        """
         origsize = struct.unpack('<Q', fsrc.read(struct.calcsize('Q')))[0]
         iv = fsrc.read(16)
 

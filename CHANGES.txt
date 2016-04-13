@@ -6,7 +6,7 @@ CHANGES
 ------------------
 
 - Add an implementation of encrypt_file and decrypt_file.
-  This allows chuncked encoding and decoding of files.
+  This allows chunked encoding and decoding of files.
   [pcdummy]
 
 
