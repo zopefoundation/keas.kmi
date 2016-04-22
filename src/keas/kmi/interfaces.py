@@ -13,10 +13,12 @@
 ##############################################################################
 """Key Management Interfaces
 """
-__docformat__ = "reStructuredText"
 import zope.interface
 import zope.schema
 from zope.interface.common import mapping
+
+
+__docformat__ = "reStructuredText"
 
 
 class IEncryptionService(zope.interface.Interface):
@@ -27,6 +29,12 @@ class IEncryptionService(zope.interface.Interface):
 
     def decrypt(key, data):
         """Returns the decrypted data"""
+
+    def encrypt_file(key, fsrc, fdst, chunksize):
+        """ """
+
+    def decrypt_file(key, fsrc, fdst, chunksize):
+        """ """
 
 
 class IKeyGenerationService(zope.interface.Interface):

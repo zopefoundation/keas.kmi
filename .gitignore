@@ -5,5 +5,15 @@ src/*.egg-info
 bin
 coverage
 develop-eggs
-keys
-parts
+keys/
+parts/
+include/
+lib/
+local/
+
+# Test data
+datakey.dat
+kek.dat
+sample.cert
+sample.key
+source-cache.log
