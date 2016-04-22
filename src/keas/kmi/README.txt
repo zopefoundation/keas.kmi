@@ -91,6 +91,30 @@ We can also decrypt the data.
   >>> keys.decrypt(key, encrypted)
   'Stephan Richter'
 
+We can also encrypt data given by a file descriptor
+
+  >>> import tempfile
+  >>> tmp_file = tempfile.TemporaryFile()
+  >>> data="encryptioniscool"*24*1024
+  >>> tmp_file.write(data)
+  >>> tmp_file.seek(0)
+  >>> encrypted_file = tempfile.TemporaryFile()
+  >>> keys.encrypt_file(key, tmp_file, encrypted_file)
+  >>> tmp_file.close()
+
+And decrypt the file
+
+  >>> decrypted_file = tempfile.TemporaryFile()
+  >>> encrypted_file.seek(0)
+  >>> keys.decrypt_file(key, encrypted_file, decrypted_file)
+  >>> encrypted_file.close()
+
+  >>> decrypted_file.seek(0)
+  >>> decrypted_data = decrypted_file.read()
+  >>> decrypted_file.close()
+  >>> decrypted_data == data
+  True
+
 And that's pretty much all there is to it. Most of the complicated
 crypto-related work happens under the hood, transparent to the user.
 
