@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.1.1 (unreleased)
+3.1.1 (2017-04-19)
 ------------------
 
 - Removed all version constraints from buildout.cfg, since the app
