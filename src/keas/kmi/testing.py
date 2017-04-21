@@ -13,16 +13,12 @@
 ##############################################################################
 """Testing Support
 """
-import StringIO
+from io import BytesIO
 import webob
-from zope.publisher import browser
-from zope.interface import implements
+from zope.interface import implementer
 from keas.kmi import facility, rest, interfaces
 
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
+from hashlib import md5
 
 KeyEncyptingKey = '''-----BEGIN RSA PRIVATE KEY-----
 MIIBOAIBAAJBAL+VS9lDsS9XOaeJppfK9lhxKMRFdcg50MR3aJEQK9rvDEqNwBS9
@@ -53,12 +49,13 @@ class FakeHTTPResponse(object):
     reason = 'Ok'
 
     def __init__(self, data):
-        self.fp = StringIO.StringIO(data)
+        self.fp = BytesIO(data)
+        self.fp_len = len(data)
         self.msg = FakeHTTPMessage(self)
 
     def read(self, amt=10*2**10):
         data = self.fp.read(amt)
-        if self.fp.len == self.fp.tell():
+        if self.fp_len == self.fp.tell():
             self.fp = None
         return data
 
@@ -83,7 +80,7 @@ class FakeHTTPConnection(object):
         elif url == '/key':
             view = rest.get_key
 
-        io = StringIO.StringIO(self.request_data[2])
+        io = BytesIO(self.request_data[2])
         req = webob.Request({'wsgi.input': io})
         res = view(self.context, req)
         return FakeHTTPResponse(res.body)
@@ -106,7 +103,7 @@ class TestingKeyManagementFacility(facility.KeyManagementFacility):
         return KeyEncyptingKey
 
 
+@implementer(interfaces.IKeyHolder)
 class TestingKeyHolder(object):
-    implements(interfaces.IKeyHolder)
     key = KeyEncyptingKey
 

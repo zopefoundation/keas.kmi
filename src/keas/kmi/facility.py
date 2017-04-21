@@ -20,27 +20,30 @@ import Crypto.Cipher.PKCS1_v1_5
 import Crypto.PublicKey.RSA
 from Crypto.Random import random
 import binascii
-import httplib
+try:
+    # Python 3
+    from http.client import HTTPSConnection
+    from urllib import parse as urlparse
+except ImportError:
+    # Python 2
+    from httplib import HTTPSConnection
+    from urlparse import urlparse
 import logging
 import os
 import struct
 import time
-import urlparse
-import zope.interface
+from zope.interface import implementer
 from keas.kmi import interfaces
 
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
+from hashlib import md5
 
 __docformat__ = "reStructuredText"
 
 logger = logging.getLogger('kmi')
 
 
+@implementer(interfaces.IEncryptionService)
 class EncryptionService(object):
-    zope.interface.implements(interfaces.IEncryptionService)
 
     CipherFactory = Crypto.Cipher.AES
     CipherMode = Crypto.Cipher.AES.MODE_CBC
@@ -185,8 +188,8 @@ class EncryptionService(object):
         fdst.truncate(origsize)
 
 
+@implementer(interfaces.IExtendedKeyManagementFacility)
 class KeyManagementFacility(EncryptionService):
-    zope.interface.implements(interfaces.IExtendedKeyManagementFacility)
 
     timeout = 3600
 
@@ -194,7 +197,7 @@ class KeyManagementFacility(EncryptionService):
     rsaKeyExponent = 65537 # Should be sufficiently high and non-symmetric
     rsaPassphrase = 'key management facility'
 
-    keyLength = rsaKeyLength/16
+    keyLength = rsaKeyLength // 16
 
     def __init__(self, storage_dir):
         self.storage_dir = storage_dir
@@ -241,7 +244,7 @@ class KeyManagementFacility(EncryptionService):
 
     def __setitem__(self, name, key):
         fn = os.path.join(self.storage_dir, name+'.dek')
-        with open(fn, 'w') as file:
+        with open(fn, 'wb') as file:
             file.write(key)
         logger.info('New key added (hash): %s', name)
 
@@ -300,12 +303,12 @@ class KeyManagementFacility(EncryptionService):
         return '<%s (%i)>' %(self.__class__.__name__, len(self))
 
 
+@implementer(interfaces.IKeyManagementFacility)
 class LocalKeyManagementFacility(EncryptionService):
     """A local facility that requests keys from the master facility."""
-    zope.interface.implements(interfaces.IKeyManagementFacility)
 
     timeout = 3600
-    httpConnFactory = httplib.HTTPSConnection
+    httpConnFactory = HTTPSConnection
 
     def __init__(self, url):
         self.url = url
@@ -313,7 +316,7 @@ class LocalKeyManagementFacility(EncryptionService):
 
     def generate(self):
         """See interfaces.IKeyGenerationService"""
-        pieces = urlparse.urlparse(self.url)
+        pieces = urlparse(self.url)
         conn = self.httpConnFactory(pieces.netloc)
         conn.request('POST', '/new', '', {})
         response = conn.getresponse()
@@ -326,7 +329,7 @@ class LocalKeyManagementFacility(EncryptionService):
         if (key in self.__cache and
             self.__cache[key][0] + self.timeout > time.time()):
             return self.__cache[key][1]
-        pieces = urlparse.urlparse(self.url)
+        pieces = urlparse(self.url)
         conn = self.httpConnFactory(pieces.netloc)
         conn.request('POST', '/key', key, {'content-type': 'text/plain'})
         response = conn.getresponse()

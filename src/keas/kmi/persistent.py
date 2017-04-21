@@ -14,8 +14,7 @@
 """Encrypted persistent objects
 """
 from __future__ import absolute_import
-import cPickle
-import cStringIO
+from ZODB._compat import BytesIO, Pickler, Unpickler
 import persistent
 import persistent.wref
 from zope.component import getUtility
@@ -52,7 +51,7 @@ def decrypt_state(state):
 
 
 def pickle_nonpersistent(state):
-    buf = cStringIO.StringIO()
+    buf = BytesIO()
     persistent_refs = []
     cache = {}
     def persistent_id(obj):
@@ -68,17 +67,17 @@ def pickle_nonpersistent(state):
             idx = cache[id(obj)] = len(persistent_refs)
             persistent_refs.append(obj)
         return idx
-    pickler = cPickle.Pickler(buf, 2)
+    pickler = Pickler(buf, 2)
     pickler.persistent_id = persistent_id
     pickler.dump(state)
     return buf.getvalue(), persistent_refs
 
 
 def unpickle_nonpersistent(data, persistent_refs):
-    buf = cStringIO.StringIO(data)
+    buf = BytesIO(data)
     def persistent_load(ref):
         return persistent_refs[ref]
-    unpickler = cPickle.Unpickler(buf)
+    unpickler = Unpickler(buf)
     unpickler.persistent_load = persistent_load
     return unpickler.load()
 

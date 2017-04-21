@@ -65,10 +65,7 @@ HIPAA and NIST key strength requirement.
 
 You can now use this key encrypting key to extract the encryption keys:
 
-  >>> try:
-  ...    from hashlib import md5
-  ... except ImportError:
-  ...    from md5 import md5
+  >>> from hashlib import md5
   >>> hash_key = md5(key).hexdigest()
 
   >>> len(keys.get(hash_key))
