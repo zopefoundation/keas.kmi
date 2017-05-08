@@ -86,8 +86,8 @@ Let's now encrypt some data:
 
 We can also decrypt the data.
 
-  >>> keys.decrypt(key, encrypted)
-  b'Stephan Richter'
+  >>> keys.decrypt(key, encrypted) == b'Stephan Richter'
+  True
 
 We can also encrypt data given by a file descriptor
 
@@ -136,8 +136,8 @@ date/time the key has been fetched and the unencrypted DEK.
 
   >>> firstTime = keys._KeyManagementFacility__dek_cache[hash_key][0]
 
-  >>> keys.decrypt(key, encrypted)
-  b'Stephan Richter'
+  >>> keys.decrypt(key, encrypted) == b'Stephan Richter'
+  True
 
   >>> secondTime = keys._KeyManagementFacility__dek_cache[hash_key][0]
 
@@ -188,8 +188,8 @@ So en- and decryption is very easy to do:
   >>> len(encrypted)
   16
 
-  >>> localKeys.decrypt(key, encrypted)
-  b'Stephan Richter'
+  >>> localKeys.decrypt(key, encrypted) == b'Stephan Richter'
+  True
 
 Instead of forwarding the en- an decryption request to the master facility,
 the local facility merely fetches the encryption key pair and executes the
@@ -223,8 +223,8 @@ decryption (private) key.
 
   >>> firstTime = localKeys._LocalKeyManagementFacility__cache[key][0]
 
-  >>> localKeys.decrypt(key, encrypted)
-  b'Stephan Richter'
+  >>> localKeys.decrypt(key, encrypted) == b'Stephan Richter'
+  True
 
   >>> secondTime = localKeys._LocalKeyManagementFacility__cache[key][0]
 
@@ -332,7 +332,7 @@ Of course, the key generation service is supported:
 However, you will always receive the same key:
 
   >>> def getKeySegment(key):
-  ...     return key.decode().split('\n')[1]
+  ...     return str(key.decode().split('\n')[1])
 
   >>> getKeySegment(testingKeys.generate())
   'MIIBOAIBAAJBAL+VS9lDsS9XOaeJppfK9lhxKMRFdcg50MR3aJEQK9rvDEqNwBS9'
@@ -347,14 +347,14 @@ However, you will always receive the same key:
 All other methods remain the same:
 
   >>> key = testingKeys.generate()
-  >>> testingKeys.getEncryptionKey(key)
-  b'_\xc4\x04\xbe5B\x7f\xaf\xd6\x92\xbd\xa0\xcf\x156\x1d\x88=p9{\xaa...'
+  >>> testingKeys.getEncryptionKey(key) == b'_\xc4\x04\xbe5B\x7f\xaf\xd6\x92\xbd\xa0\xcf\x156\x1d\x88=p9{\xaal\xb4\x84M\x1d\xfd\xb2z\xae\x1a'
+  True
 
 We can also safely en- and decrypt:
 
   >>> encrypted = testingKeys.encrypt(key, b'Stephan Richter')
-  >>> testingKeys.decrypt(key, encrypted)
-  b'Stephan Richter'
+  >>> testingKeys.decrypt(key, encrypted) == b'Stephan Richter'
+  True
 
 
 Key Holder
