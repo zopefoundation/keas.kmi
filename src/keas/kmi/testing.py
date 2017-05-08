@@ -20,7 +20,7 @@ from keas.kmi import facility, rest, interfaces
 
 from hashlib import md5
 
-KeyEncyptingKey = '''-----BEGIN RSA PRIVATE KEY-----
+KeyEncyptingKey = b'''-----BEGIN RSA PRIVATE KEY-----
 MIIBOAIBAAJBAL+VS9lDsS9XOaeJppfK9lhxKMRFdcg50MR3aJEQK9rvDEqNwBS9
 rQlU/x/NWxG0vvFCnrDn7VvQN+syb3+a0DMCAgChAkAzKw3lwPxw0VVccq1J7qeO
 4DXR1iEMIoWruiCyq0aLkHnQzrZpaHnd4w+JNKIGOVDEWItf3iZNMXkoqj2hoPmp
@@ -32,9 +32,9 @@ F4a4UlXVivb82J7ew3ZABnFIC9Q+dHW7WeZhxg==
 '''
 
 EncryptedEncryptionKey = (
-    '\xbc\x08\xdbo\x04\xe3\xc7G\x13\xd3\x86\x92\xfa\xe8i>,+\xda\xf8/B2]s\xd4'
-    '\x10}[\xfd\x19\x98\xb1\xfa*V~U\xdf\t\x02\x01\xa6\xa8\xae\x8b\x8cm\xd9n'
-    '\xd5\x83\xa1%k\x16lfuY\\q\x8c\x8b')
+    b'\xbc\x08\xdbo\x04\xe3\xc7G\x13\xd3\x86\x92\xfa\xe8i>,+\xda\xf8/B2]s\xd4'
+    b'\x10}[\xfd\x19\x98\xb1\xfa*V~U\xdf\t\x02\x01\xa6\xa8\xae\x8b\x8cm\xd9n'
+    b'\xd5\x83\xa1%k\x16lfuY\\q\x8c\x8b')
 
 class FakeHTTPMessage(object):
 

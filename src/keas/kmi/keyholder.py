@@ -23,5 +23,6 @@ class KeyHolder(object):
     """A key holder utility that loads the key from a file and keeps it in RAM."""
 
     def __init__(self, filename):
-        self.key = file(filename, 'rb').read()
+        with open(filename, 'rb') as f:
+            self.key = f.read()
 

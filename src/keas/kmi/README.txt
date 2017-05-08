@@ -7,6 +7,7 @@ infrastructure. Part of this infrastructure is a key management facility that
 provides several services related to keys. All keys are stored in a specified
 storage directory.
 
+  >>> from __future__ import print_function
   >>> import tempfile
   >>> storage_dir = tempfile.mkdtemp()
 
@@ -54,7 +55,7 @@ key:
 Let's now use the key generation service's API to generate a key.
 
   >>> key = keys.generate()
-  >>> print key
+  >>> print(key.decode())
   -----BEGIN RSA PRIVATE KEY-----
   ...
   -----END RSA PRIVATE KEY-----
@@ -79,22 +80,22 @@ you to encrypt and decrypt a string given the key encrypting key.
 
 Let's now encrypt some data:
 
-  >>> encrypted = keys.encrypt(key, 'Stephan Richter')
+  >>> encrypted = keys.encrypt(key, b'Stephan Richter')
   >>> len(encrypted)
   16
 
 We can also decrypt the data.
 
   >>> keys.decrypt(key, encrypted)
-  'Stephan Richter'
+  b'Stephan Richter'
 
 We can also encrypt data given by a file descriptor
 
   >>> import tempfile
   >>> tmp_file = tempfile.TemporaryFile()
-  >>> data="encryptioniscool"*24*1024
-  >>> tmp_file.write(data)
-  >>> tmp_file.seek(0)
+  >>> data=b"encryptioniscool"*24*1024
+  >>> pos = tmp_file.write(data)
+  >>> pos = tmp_file.seek(0)
   >>> encrypted_file = tempfile.TemporaryFile()
   >>> keys.encrypt_file(key, tmp_file, encrypted_file)
   >>> tmp_file.close()
@@ -102,11 +103,11 @@ We can also encrypt data given by a file descriptor
 And decrypt the file
 
   >>> decrypted_file = tempfile.TemporaryFile()
-  >>> encrypted_file.seek(0)
+  >>> pos =encrypted_file.seek(0)
   >>> keys.decrypt_file(key, encrypted_file, decrypted_file)
   >>> encrypted_file.close()
 
-  >>> decrypted_file.seek(0)
+  >>> pos = decrypted_file.seek(0)
   >>> decrypted_data = decrypted_file.read()
   >>> decrypted_file.close()
   >>> decrypted_data == data
@@ -136,7 +137,7 @@ date/time the key has been fetched and the unencrypted DEK.
   >>> firstTime = keys._KeyManagementFacility__dek_cache[hash_key][0]
 
   >>> keys.decrypt(key, encrypted)
-  'Stephan Richter'
+  b'Stephan Richter'
 
   >>> secondTime = keys._KeyManagementFacility__dek_cache[hash_key][0]
 
@@ -183,12 +184,12 @@ As with the master facility, the local facility provides the
 
 So en- and decryption is very easy to do:
 
-  >>> encrypted = localKeys.encrypt(key, 'Stephan Richter')
+  >>> encrypted = localKeys.encrypt(key, b'Stephan Richter')
   >>> len(encrypted)
   16
 
   >>> localKeys.decrypt(key, encrypted)
-  'Stephan Richter'
+  b'Stephan Richter'
 
 Instead of forwarding the en- an decryption request to the master facility,
 the local facility merely fetches the encryption key pair and executes the
@@ -223,7 +224,7 @@ decryption (private) key.
   >>> firstTime = localKeys._LocalKeyManagementFacility__cache[key][0]
 
   >>> localKeys.decrypt(key, encrypted)
-  'Stephan Richter'
+  b'Stephan Richter'
 
   >>> secondTime = localKeys._LocalKeyManagementFacility__cache[key][0]
 
@@ -238,7 +239,7 @@ The local facility also provides the ``IKeyGenerationService`` interface:
 The local method call is identical to the master one:
 
   >>> key2 = localKeys.generate()
-  >>> print key2
+  >>> print(key2.decode())
   -----BEGIN RSA PRIVATE KEY-----
   ...
   -----END RSA PRIVATE KEY-----
@@ -271,7 +272,7 @@ So let's have a look at the call:
 
   >>> request = Request({})
   >>> key3 = rest.create_key(keys, request).body
-  >>> print key3
+  >>> print(key3.decode())
   -----BEGIN RSA PRIVATE KEY-----
   ...
   -----END RSA PRIVATE KEY-----
@@ -299,13 +300,13 @@ encryption key string:
 If you try to request a nonexistent key, you get a 404 error: encryption key
 string:
 
-  >>> request.body = 'xxyz'
-  >>> print rest.get_key(keys, request)
+  >>> request.body = b'xxyz'
+  >>> print(rest.get_key(keys, request))
   Key not found
 
 A `GET` request to the root shows us a server status page
 
-  >>> print rest.get_status(keys, Request({}))
+  >>> print(rest.get_status(keys, Request({})))
   200 OK
   Content-Type: text/plain
   Content-Length: 25
@@ -331,7 +332,7 @@ Of course, the key generation service is supported:
 However, you will always receive the same key:
 
   >>> def getKeySegment(key):
-  ...     return key.split('\n')[1]
+  ...     return key.decode().split('\n')[1]
 
   >>> getKeySegment(testingKeys.generate())
   'MIIBOAIBAAJBAL+VS9lDsS9XOaeJppfK9lhxKMRFdcg50MR3aJEQK9rvDEqNwBS9'
@@ -347,13 +348,13 @@ All other methods remain the same:
 
   >>> key = testingKeys.generate()
   >>> testingKeys.getEncryptionKey(key)
-  '_\xc4\x04\xbe5B\x7f\xaf\xd6\x92\xbd\xa0\xcf\x156\x1d\x88=p9{\xaa...'
+  b'_\xc4\x04\xbe5B\x7f\xaf\xd6\x92\xbd\xa0\xcf\x156\x1d\x88=p9{\xaa...'
 
 We can also safely en- and decrypt:
 
-  >>> encrypted = testingKeys.encrypt(key, 'Stephan Richter')
+  >>> encrypted = testingKeys.encrypt(key, b'Stephan Richter')
   >>> testingKeys.decrypt(key, encrypted)
-  'Stephan Richter'
+  b'Stephan Richter'
 
 
 Key Holder

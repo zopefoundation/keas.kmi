@@ -27,11 +27,11 @@ that you're supposed to provide in your application.
 
 None of the raw data appears in the pickle
 
-    >>> import cPickle as pickle
+    >>> from zodbpickle import pickle
     >>> pickled_data = pickle.dumps(userdata)
-    >>> 'Stephan' in pickled_data
+    >>> b'Stephan' in pickled_data
     False
-    >>> '123456789' in pickled_data
+    >>> b'123456789' in pickled_data
     False
 
 We can successfully load it
@@ -48,9 +48,9 @@ from `EncryptedPersistent` will be encrypted.
     >>> users['mgedmin'] = UserPrivateData('Marius Gedminas', '987654321')
 
     >>> pickled_data = pickle.dumps(users)
-    >>> 'stephan' in pickled_data
+    >>> b'stephan' in pickled_data
     True
-    >>> '123456789' in pickled_data
+    >>> b'123456789' in pickled_data
     False
 
 

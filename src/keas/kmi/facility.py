@@ -23,7 +23,7 @@ import binascii
 try:
     # Python 3
     from http.client import HTTPSConnection
-    from urllib import parse as urlparse
+    from urllib.parse import urlparse
 except ImportError:
     # Python 2
     from httplib import HTTPSConnection
@@ -60,12 +60,15 @@ class EncryptionService(object):
         return text + binascii.unhexlify(n * ("%02x" % n))
 
     def _pkcs7Decode(self, text, k=16):
-        n = int(binascii.hexlify(text[-1]), 16)
+        # In Python 3, text[-1] returns an int, not bytes, we need text[-1:] to
+        # have bytes. In Python 2, it doesn't matter, both return str.
+        # Actually it seems we could just do `n = text[-1]` in Python 3.
+        n = int(binascii.hexlify(text[-1:]), 16)
         if n > k:
             raise ValueError("Input is not padded or padding is corrupt")
         return text[:-n]
 
-    _bytesToKeySalt = '12345678'
+    _bytesToKeySalt = b'12345678'
     def _bytesToKey(self, data):
         # Simplified version of M2Crypto.m2.bytes_to_key().
         assert len(self._bytesToKeySalt) == 8, len(self._bytesToKeySalt)
@@ -103,7 +106,9 @@ class EncryptionService(object):
         encryptionKey = self._bytesToKey(self.getEncryptionKey(key))
 
         # 2. Create a random initialization vector
-        iv = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
+        # bytes(bytearray(generator)) is needed for Python 2,
+        # with Python 3 bytes(generator) works
+        iv = bytes(bytearray((random.randint(0, 0xFF)) for i in range(16)))
 
         # 3. Create a cipher object
         cipher = self.CipherFactory.new(
@@ -132,7 +137,7 @@ class EncryptionService(object):
 
             # Apply padding.
             if len(chunk) % 16 != 0:
-                chunk += ' ' * (16 - len(chunk) % 16)
+                chunk += b' ' * (16 - len(chunk) % 16)
 
             # Write the chunk
             fdst.write(cipher.encrypt(chunk))
@@ -318,7 +323,7 @@ class LocalKeyManagementFacility(EncryptionService):
         """See interfaces.IKeyGenerationService"""
         pieces = urlparse(self.url)
         conn = self.httpConnFactory(pieces.netloc)
-        conn.request('POST', '/new', '', {})
+        conn.request('POST', '/new', b'', {})
         response = conn.getresponse()
         data = response.read()
         response.close()
