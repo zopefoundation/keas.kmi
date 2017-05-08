@@ -1,3 +1,4 @@
+from __future__ import print_function
 ##############################################################################
 #
 # Copyright (c) 2008 Zope Foundation and Contributors.
@@ -15,33 +16,39 @@
 """
 __docformat__ = "reStructuredText"
 
+import os
 import sys
 import optparse
 import textwrap
-import urlparse
+try:
+    # Python 3
+    from urllib.parse import urlparse
+except ImportError:
+    # Python 2
+    from urlparse import urlparse
 
 from keas.kmi.facility import LocalKeyManagementFacility
 
 def ping(kmf):
-    pieces = urlparse.urlparse(kmf.url)
+    pieces = urlparse(kmf.url)
     conn = kmf.httpConnFactory(pieces.netloc)
     conn.request('GET', '/')
     response = conn.getresponse()
-    print response.status, response.reason
-    print
-    print response.read()
+    print(response.status, response.reason)
+    print()
+    print(response.read())
 
 
 def new_key(kmf):
-    sys.stdout.write(kmf.generate())
+    os.write(sys.stdout.fileno(), kmf.generate())
 
 
 def read_kek(kekfile):
     try:
-        return file(kekfile, 'rb').read()
-    except IOError, e:
-        print >> sys.stderr, "Could not read key encrypting key from %s" % kekfile
-        print >> sys.stderr, e
+        return open(kekfile, 'rb').read()
+    except IOError as e:
+        print("Could not read key encrypting key from %s" % kekfile, file=sys.stderr)
+        print(e, file=sys.stderr)
         sys.exit(1)
 
 
@@ -50,31 +57,31 @@ def read_data(filename=None):
         return sys.stdin.read()
     else:
         try:
-            return file(filename, 'rb').read()
-        except IOError, e:
-            print >> sys.stderr, "Could not read %s" % filename
-            print >> sys.stderr, e
+            return open(filename, 'rb').read()
+        except IOError as e:
+            print("Could not read %s" % filename, file=sys.stderr)
+            print(e, file=sys.stderr)
             sys.exit(1)
 
 
 def get_key(kmf, kekfile):
     key_encrypting_key = read_kek(kekfile)
     key = kmf.getEncryptionKey(key_encrypting_key)
-    sys.stdout.write(key)
+    os.write(sys.stdout.fileno(), key)
 
 
 def encrypt(kmf, kekfile, filename=None):
     key_encrypting_key = read_kek(kekfile)
     data = read_data(filename)
     encrypted = kmf.encrypt(key_encrypting_key, data)
-    sys.stdout.write(encrypted)
+    os.write(sys.stdout.fileno(), encrypted)
 
 
 def decrypt(kmf, kekfile, filename=None):
     key_encrypting_key = read_kek(kekfile)
     data = read_data(filename)
     decrypted = kmf.decrypt(key_encrypting_key, data)
-    sys.stdout.write(decrypted)
+    os.write(sys.stdout.fileno(), decrypted)
 
 
 parser = optparse.OptionParser(textwrap.dedent("""\
@@ -88,7 +95,7 @@ parser = optparse.OptionParser(textwrap.dedent("""\
            %prog URL -e key.txt data.txt > encrypted.txt
                 encrypt data
 
-           %prog URL -d key.txt encrytped.txt > data.txt
+           %prog URL -d key.txt encrypted.txt > data.txt
                 decrypt data
 
            %prog URL -g key.txt > secretkey.bin
@@ -130,5 +137,5 @@ def main(argv=None):
 
     try:
         opts.action(kmf, *args)
-    except TypeError, err:
+    except TypeError as err:
         parser.error('incorrect number of arguments')

@@ -3,9 +3,9 @@ This package provides a NIST SP 800-57 compliant Key Management Infrastructure
 
 To get started do::
 
-  $ python bootstrap.py # Must be Python 2.5 or higher
-  $ ./bin/buildout     # Depends on successfull compilation of M2Crypto
-  $ ./bin/runserver    # or ./bin/paster serve server.ini
+  $ python bootstrap.py # Must be Python 2.7 or higher
+  $ ./bin/buildout     # Depends on successful compilation of M2Crypto
+  $ ./bin/runserver    # or ./bin/gunicorn --paste server.ini
 
 The server will come up on port 8080. You can create a new key encrypting key
 using::
@@ -15,7 +15,7 @@ using::
 
 or, if you want a more convenient tool::
 
-  $ ./bin/testclient https://localhost:8080/new -n > kek.dat
+  $ ./bin/testclient https://localhost:8080 -n > kek.dat
 
 The data encryption key can now be retrieved by posting the KEK to another
 URL::
@@ -25,7 +25,7 @@ URL::
 
 or ::
 
-  $ ./bin/testclient https://localhost:8080/new -g kek.dat > datakey.dat
+  $ ./bin/testclient https://localhost:8080 -g kek.dat > datakey.dat
 
 Note: To be compliant, the server must use an encrypted communication channel
 of course.  The ``--ca-certificate`` tells wget to trust the sample self-signed
