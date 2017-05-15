@@ -20,27 +20,29 @@ import Crypto.Cipher.PKCS1_v1_5
 import Crypto.PublicKey.RSA
 from Crypto.Random import random
 import binascii
-import httplib
+try:
+    # Python 3
+    from http.client import HTTPSConnection
+    from urllib.parse import urlparse
+except ImportError:
+    # Python 2
+    from httplib import HTTPSConnection
+    from urlparse import urlparse
 import logging
 import os
 import struct
 import time
-import urlparse
-import zope.interface
+from zope.interface import implementer
 from keas.kmi import interfaces
 
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
+from hashlib import md5
 
-__docformat__ = "reStructuredText"
 
 logger = logging.getLogger('kmi')
 
 
+@implementer(interfaces.IEncryptionService)
 class EncryptionService(object):
-    zope.interface.implements(interfaces.IEncryptionService)
 
     CipherFactory = Crypto.Cipher.AES
     CipherMode = Crypto.Cipher.AES.MODE_CBC
@@ -57,12 +59,15 @@ class EncryptionService(object):
         return text + binascii.unhexlify(n * ("%02x" % n))
 
     def _pkcs7Decode(self, text, k=16):
-        n = int(binascii.hexlify(text[-1]), 16)
+        # In Python 3, text[-1] returns an int, not bytes, we need text[-1:] to
+        # have bytes. In Python 2, it doesn't matter, both return str.
+        # Actually it seems we could just do `n = text[-1]` in Python 3.
+        n = int(binascii.hexlify(text[-1:]), 16)
         if n > k:
             raise ValueError("Input is not padded or padding is corrupt")
         return text[:-n]
 
-    _bytesToKeySalt = '12345678'
+    _bytesToKeySalt = b'12345678'
     def _bytesToKey(self, data):
         # Simplified version of M2Crypto.m2.bytes_to_key().
         assert len(self._bytesToKeySalt) == 8, len(self._bytesToKeySalt)
@@ -100,7 +105,9 @@ class EncryptionService(object):
         encryptionKey = self._bytesToKey(self.getEncryptionKey(key))
 
         # 2. Create a random initialization vector
-        iv = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
+        # bytes(bytearray(generator)) is needed for Python 2,
+        # with Python 3 bytes(generator) works
+        iv = bytes(bytearray((random.randint(0, 0xFF)) for i in range(16)))
 
         # 3. Create a cipher object
         cipher = self.CipherFactory.new(
@@ -129,7 +136,7 @@ class EncryptionService(object):
 
             # Apply padding.
             if len(chunk) % 16 != 0:
-                chunk += ' ' * (16 - len(chunk) % 16)
+                chunk += b' ' * (16 - len(chunk) % 16)
 
             # Write the chunk
             fdst.write(cipher.encrypt(chunk))
@@ -185,8 +192,8 @@ class EncryptionService(object):
         fdst.truncate(origsize)
 
 
+@implementer(interfaces.IExtendedKeyManagementFacility)
 class KeyManagementFacility(EncryptionService):
-    zope.interface.implements(interfaces.IExtendedKeyManagementFacility)
 
     timeout = 3600
 
@@ -194,7 +201,7 @@ class KeyManagementFacility(EncryptionService):
     rsaKeyExponent = 65537 # Should be sufficiently high and non-symmetric
     rsaPassphrase = 'key management facility'
 
-    keyLength = rsaKeyLength/16
+    keyLength = rsaKeyLength // 16
 
     def __init__(self, storage_dir):
         self.storage_dir = storage_dir
@@ -241,7 +248,7 @@ class KeyManagementFacility(EncryptionService):
 
     def __setitem__(self, name, key):
         fn = os.path.join(self.storage_dir, name+'.dek')
-        with open(fn, 'w') as file:
+        with open(fn, 'wb') as file:
             file.write(key)
         logger.info('New key added (hash): %s', name)
 
@@ -300,12 +307,12 @@ class KeyManagementFacility(EncryptionService):
         return '<%s (%i)>' %(self.__class__.__name__, len(self))
 
 
+@implementer(interfaces.IKeyManagementFacility)
 class LocalKeyManagementFacility(EncryptionService):
     """A local facility that requests keys from the master facility."""
-    zope.interface.implements(interfaces.IKeyManagementFacility)
 
     timeout = 3600
-    httpConnFactory = httplib.HTTPSConnection
+    httpConnFactory = HTTPSConnection
 
     def __init__(self, url):
         self.url = url
@@ -313,9 +320,9 @@ class LocalKeyManagementFacility(EncryptionService):
 
     def generate(self):
         """See interfaces.IKeyGenerationService"""
-        pieces = urlparse.urlparse(self.url)
+        pieces = urlparse(self.url)
         conn = self.httpConnFactory(pieces.netloc)
-        conn.request('POST', '/new', '', {})
+        conn.request('POST', '/new', b'', {})
         response = conn.getresponse()
         data = response.read()
         response.close()
@@ -326,7 +333,7 @@ class LocalKeyManagementFacility(EncryptionService):
         if (key in self.__cache and
             self.__cache[key][0] + self.timeout > time.time()):
             return self.__cache[key][1]
-        pieces = urlparse.urlparse(self.url)
+        pieces = urlparse(self.url)
         conn = self.httpConnFactory(pieces.netloc)
         conn.request('POST', '/key', key, {'content-type': 'text/plain'})
         response = conn.getresponse()

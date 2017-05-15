@@ -18,9 +18,6 @@ import zope.schema
 from zope.interface.common import mapping
 
 
-__docformat__ = "reStructuredText"
-
-
 class IEncryptionService(zope.interface.Interface):
     """Utility providing encryption mechanism"""
 

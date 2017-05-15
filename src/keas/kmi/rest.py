@@ -17,12 +17,14 @@ from webob import Response, exc
 
 def get_status(context, request):
     return Response(
-        'KMS server holding %d keys' %len(context),
+        'KMS server holding %d keys' % len(context),
+        charset='utf-8',
         headerlist=[('Content-Type', 'text/plain')])
 
 def create_key(context, request):
     return Response(
         context.generate(),
+        charset='utf-8',
         headerlist=[('Content-Type', 'text/plain')])
 
 def get_key(context, request):
@@ -30,6 +32,7 @@ def get_key(context, request):
     try:
         return Response(
             context.getEncryptionKey(key),
+            charset='utf-8',
             headerlist=[('Content-Type', 'text/plain')])
     except KeyError:
         return exc.HTTPNotFound('Key not found')

@@ -13,16 +13,15 @@
 ##############################################################################
 """Simple Key Holder
 """
-__docformat__ = "reStructuredText"
-from zope.interface import implements
+from zope.interface import implementer
 from keas.kmi.interfaces import IKeyHolder
 
 
+@implementer(IKeyHolder)
 class KeyHolder(object):
     """A key holder utility that loads the key from a file and keeps it in RAM."""
 
-    implements(IKeyHolder)
-
     def __init__(self, filename):
-        self.key = file(filename, 'rb').read()
+        with open(filename, 'rb') as f:
+            self.key = f.read()
 
