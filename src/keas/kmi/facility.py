@@ -37,7 +37,6 @@ from keas.kmi import interfaces
 
 from hashlib import md5
 
-__docformat__ = "reStructuredText"
 
 logger = logging.getLogger('kmi')
 

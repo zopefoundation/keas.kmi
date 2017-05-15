@@ -93,7 +93,7 @@ We can also encrypt data given by a file descriptor
 
   >>> import tempfile
   >>> tmp_file = tempfile.TemporaryFile()
-  >>> data=b"encryptioniscool"*24*1024
+  >>> data = b"encryptioniscool"*24*1024
   >>> pos = tmp_file.write(data)
   >>> pos = tmp_file.seek(0)
   >>> encrypted_file = tempfile.TemporaryFile()
@@ -103,7 +103,7 @@ We can also encrypt data given by a file descriptor
 And decrypt the file
 
   >>> decrypted_file = tempfile.TemporaryFile()
-  >>> pos =encrypted_file.seek(0)
+  >>> pos = encrypted_file.seek(0)
   >>> keys.decrypt_file(key, encrypted_file, decrypted_file)
   >>> encrypted_file.close()
 

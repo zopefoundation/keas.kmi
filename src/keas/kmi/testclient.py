@@ -1,4 +1,3 @@
-from __future__ import print_function
 ##############################################################################
 #
 # Copyright (c) 2008 Zope Foundation and Contributors.
@@ -14,7 +13,7 @@ from __future__ import print_function
 ##############################################################################
 """Test client to access the KMI server API.
 """
-__docformat__ = "reStructuredText"
+from __future__ import print_function
 
 import os
 import sys
@@ -45,7 +44,8 @@ def new_key(kmf):
 
 def read_kek(kekfile):
     try:
-        return open(kekfile, 'rb').read()
+        with open(kekfile, 'rb') as fp:
+            return fp.read()
     except IOError as e:
         print("Could not read key encrypting key from %s" % kekfile, file=sys.stderr)
         print(e, file=sys.stderr)
@@ -57,7 +57,8 @@ def read_data(filename=None):
         return sys.stdin.read()
     else:
         try:
-            return open(filename, 'rb').read()
+            with open(filename, 'rb') as fp:
+                return fp.read()
         except IOError as e:
             print("Could not read %s" % filename, file=sys.stderr)
             print(e, file=sys.stderr)

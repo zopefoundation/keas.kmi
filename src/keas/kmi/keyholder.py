@@ -13,7 +13,6 @@
 ##############################################################################
 """Simple Key Holder
 """
-__docformat__ = "reStructuredText"
 from zope.interface import implementer
 from keas.kmi.interfaces import IKeyHolder
 
