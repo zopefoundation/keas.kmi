@@ -62,6 +62,7 @@ setup (
         'pyramid',
         'pyramid_zcml',
         'setuptools',
+        'six',
         'transaction',
         'zope.interface',
         'zope.schema',

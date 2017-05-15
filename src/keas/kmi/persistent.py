@@ -14,7 +14,7 @@
 """Encrypted persistent objects
 """
 from __future__ import absolute_import
-from ZODB._compat import BytesIO, Pickler, Unpickler
+from keas.kmi._compat import BytesIO, Pickler, Unpickler
 import persistent
 import persistent.wref
 from zope.component import getUtility
