@@ -11,6 +11,8 @@ __pycache__
 /include/
 /lib/
 /local/
+# ignore virtualenv if used
+/ve/
 
 # Test data
 datakey.dat
