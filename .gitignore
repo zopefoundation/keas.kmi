@@ -12,6 +12,7 @@ __pycache__
 /lib/
 /local/
 # ignore virtualenv if used
+/venv/
 /ve/
 
 # Test data
