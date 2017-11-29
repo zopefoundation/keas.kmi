@@ -67,6 +67,7 @@ ZOPE
 
 # resume entrypoint stuff
 if [[ "${1:-}" == 'run' ]]; then
+    ls keys/
     gunicorn --paste "${GENERATED_SERV_CONF_FILE}"
 else
     exec "$@"

@@ -4,7 +4,7 @@ VENV := venv
 
 DOCKER_IMAGE_NAME ?= shoobx/keas.kmi
 KMI_VERSION ?= $(shell python setup.py --version)
-DOCKER_TAG := $(DOCKER_IMAGE_NAME):$(KMI_VERSION)
+export DOCKER_TAG := $(DOCKER_IMAGE_NAME):$(KMI_VERSION)
 
 .PHONY: all  # default target builds kmi locally
 all: bin/kmi
@@ -25,6 +25,10 @@ docker:
 docker-publish: docker
 	docker push "$(DOCKER_TAG)"
 
+.PHONY: docker-run  # quick example of running this
+docker-run: docker keys/
+	bash docker/run_dev.sh
+
 bin/kmi: bin/buildout
 	$(VENV)/bin/pip install 'setuptools<38.2'
 	bin/buildout
@@ -34,3 +38,6 @@ bin/buildout: venv/bin/python
 
 ve/ venv/bin/python venv/bin/pip:
 	virtualenv -p python2 $(VENV)/
+
+keys/:
+	mkdir -p "$@"

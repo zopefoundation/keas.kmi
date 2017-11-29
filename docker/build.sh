@@ -14,7 +14,7 @@ assert p.read(['versions.cfg'])
 requirements = (
     "{0}=={1}".format(name, version)
     for name, version in p.items('versions')
-    if not re.search(r'\.recipe\.|buildout', name)
+    if not re.search(r'\.recipe\.|buildout|\.testing', name)
 )
 
 for version_string in requirements:
