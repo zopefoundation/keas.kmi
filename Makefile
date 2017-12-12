@@ -13,10 +13,6 @@ all: bin/kmi
 clean:
 	git clean -dxf
 
-.PHONY: update  # generates a new frozen versions.cfg
-update: bin/buildout
-	bin/buildout update-versions-file=versions.cfg
-
 .PHONY: docker  # builds the docker image
 docker:
 	docker build -t "$(DOCKER_TAG)" .
