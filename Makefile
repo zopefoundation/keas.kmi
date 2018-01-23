@@ -26,7 +26,7 @@ docker-run: docker keys/
 	bash docker/run_dev.sh
 
 bin/kmi: bin/buildout
-	$(VENV)/bin/pip install 'setuptools<38.2'
+	$(VENV)/bin/pip install 'setuptools<39'
 	bin/buildout
 
 bin/buildout: venv/bin/python
