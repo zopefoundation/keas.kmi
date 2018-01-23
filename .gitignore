@@ -1,15 +1,19 @@
 *.pyc
 __pycache__
-src/*.egg-info
+/src/*.egg-info
 .installed.cfg
-bin
-coverage
-develop-eggs
-keys/
-parts/
-include/
-lib/
-local/
+/bin/
+/coverage/
+/develop-eggs/
+/eggs/
+/keys/
+/parts/
+/include/
+/lib/
+/local/
+# ignore virtualenv if used
+/venv/
+/ve/
 
 # Test data
 datakey.dat
