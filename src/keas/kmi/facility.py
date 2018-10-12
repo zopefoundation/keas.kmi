@@ -52,7 +52,7 @@ class EncryptionService(object):
     # initialization vector is assumed to be 16 bytes because that's what
     #   openssl aes-256-cbc -nosalt -P -k 'a'
     # prints if you execute it on the command line
-    initializationVector = '0123456789ABCDEF'
+    initializationVector = b'0123456789ABCDEF'
 
     def _pkcs7Encode(self, text, k=16):
         n = k - (len(text) % k)
