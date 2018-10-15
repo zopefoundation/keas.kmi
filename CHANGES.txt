@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.2.1 (unreleased)
+3.2.1 (2018-10-15)
 ------------------
 
 - The default initializeVector is now a byte string.
