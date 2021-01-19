@@ -49,6 +49,9 @@ setup (
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: Implementation :: CPython',
         'Natural Language :: English',
         'Operating System :: OS Independent',
@@ -65,7 +68,7 @@ setup (
             ],
         ),
     install_requires = [
-        'pycrypto',
+        'pycryptodome',
         'pyramid',
         'pyramid_zcml',
         'setuptools',
@@ -73,7 +76,7 @@ setup (
         'transaction',
         'zope.interface',
         'zope.schema',
-        ],
+    ],
     zip_safe = False,
     entry_points = """
     [console_scripts]

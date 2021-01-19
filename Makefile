@@ -33,7 +33,7 @@ bin/buildout: venv/bin/python
 	$(VENV)/bin/python bootstrap.py
 
 ve/ venv/bin/python venv/bin/pip:
-	virtualenv -p python2 $(VENV)/
+	virtualenv -p python3 $(VENV)/
 
 keys/:
 	mkdir -p "$@"

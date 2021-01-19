@@ -15,11 +15,14 @@
 """
 from __future__ import absolute_import
 
+import binascii
+
 import Crypto.Cipher
+import Crypto.Cipher.AES
 import Crypto.Cipher.PKCS1_v1_5
 import Crypto.PublicKey.RSA
 from Crypto.Random import random
-import binascii
+
 try:
     # Python 3
     from http.client import HTTPSConnection
@@ -28,15 +31,16 @@ except ImportError:
     # Python 2
     from httplib import HTTPSConnection
     from urlparse import urlparse
+
 import logging
 import os
 import struct
 import time
-from zope.interface import implementer
-from keas.kmi import interfaces
-
 from hashlib import md5
 
+from zope.interface import implementer
+
+from keas.kmi import interfaces
 
 logger = logging.getLogger('kmi')
 
