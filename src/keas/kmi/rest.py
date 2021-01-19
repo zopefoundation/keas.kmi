@@ -15,6 +15,7 @@
 """
 from webob import Response, exc
 
+
 def get_status(context, request):
     return Response(
         'KMS server holding %d keys' % len(context),

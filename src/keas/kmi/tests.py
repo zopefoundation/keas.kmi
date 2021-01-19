@@ -16,15 +16,15 @@
 import doctest
 import re
 import tempfile
-import transaction
 import unittest
 
+import transaction
 from zope.app.testing import setup
 from zope.component import provideUtility
 from zope.testing.renormalizing import RENormalizing
 
-from keas.kmi.testing import TestingKeyManagementFacility
 from keas.kmi.interfaces import IKeyManagementFacility
+from keas.kmi.testing import TestingKeyManagementFacility
 
 
 def setUpPersistent(test):
