@@ -2,11 +2,10 @@
 CHANGES
 =======
 
-3.2.2 (unreleased)
+3.3.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Swap pycryptodome in for pycrypto
 
 3.2.1 (2018-10-15)
 ------------------

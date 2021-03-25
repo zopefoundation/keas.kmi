@@ -15,10 +15,11 @@
 """
 from __future__ import print_function
 
+import optparse
 import os
 import sys
-import optparse
 import textwrap
+
 try:
     # Python 3
     from urllib.parse import urlparse
@@ -27,6 +28,7 @@ except ImportError:
     from urlparse import urlparse
 
 from keas.kmi.facility import LocalKeyManagementFacility
+
 
 def ping(kmf):
     pieces = urlparse(kmf.url)

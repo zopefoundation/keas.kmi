@@ -14,12 +14,13 @@
 """Encrypted persistent objects
 """
 from __future__ import absolute_import
-from keas.kmi._compat import BytesIO, Pickler, Unpickler
+
 import persistent
 import persistent.wref
 from zope.component import getUtility
-from keas.kmi.interfaces import IEncryptionService
-from keas.kmi.interfaces import IKeyHolder
+
+from keas.kmi._compat import BytesIO, Pickler, Unpickler
+from keas.kmi.interfaces import IEncryptionService, IKeyHolder
 
 
 class EncryptedPersistent(persistent.Persistent):
@@ -99,4 +100,3 @@ def convert_object_to_encrypted(obj):
     obj._p_activate()
     obj.__class__.__setstate__ = real_setstate
     obj._p_changed = True
-

@@ -13,12 +13,13 @@
 ##############################################################################
 """Testing Support
 """
+from hashlib import md5
 from io import BytesIO
+
 import webob
 from zope.interface import implementer
-from keas.kmi import facility, rest, interfaces
 
-from hashlib import md5
+from keas.kmi import facility, interfaces, rest
 
 KeyEncyptingKey = b'''-----BEGIN RSA PRIVATE KEY-----
 MIIBOAIBAAJBAL+VS9lDsS9XOaeJppfK9lhxKMRFdcg50MR3aJEQK9rvDEqNwBS9
