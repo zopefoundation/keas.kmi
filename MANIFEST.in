@@ -1,9 +1,20 @@
-include bootstrap.py
-include buildout.cfg
-include server.ini
-include zope.conf
-include .travis.yml
-include generate-sample-cert.sh
-include sample.pem
+# Generated from:
+# https://github.com/zopefoundation/meta/tree/master/config/pure-python
+include *.rst
 include *.txt
-recursive-include src/keas/kmi *.zcml *.py *.txt
+include buildout.cfg
+include tox.ini
+
+recursive-include src *.pt
+recursive-include src *.py
+recursive-include src *.rst
+recursive-include src *.txt
+recursive-include src *.zcml
+include *.conf
+include *.crt
+include *.key
+include *.sh
+include Dockerfile
+include Makefile
+include server.ini
+recursive-include docker *.sh
