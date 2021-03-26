@@ -22,8 +22,10 @@ from keas.kmi import facility
 
 FACILITY = None
 
+
 def get_facility(environ):
     return FACILITY
+
 
 def application_factory(global_config, **kw):
     storage_dir = os.path.abspath(kw['storage-dir'])
@@ -31,9 +33,8 @@ def application_factory(global_config, **kw):
         os.mkdir(storage_dir)
     global FACILITY
     FACILITY = facility.KeyManagementFacility(storage_dir)
-    config =  pyramid.config.Configurator(
+    config = pyramid.config.Configurator(
         root_factory=get_facility, package=keas.kmi)
     config.include('pyramid_zcml')
     config.load_zcml('configure.zcml')
     return config.make_wsgi_app()
-

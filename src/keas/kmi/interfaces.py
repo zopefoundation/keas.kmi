@@ -43,11 +43,13 @@ class IKeyGenerationService(zope.interface.Interface):
         Returns the private key encrypting key.
         """
 
+
 class IKeyManagementFacility(IEncryptionService, IKeyGenerationService):
     """Key Management Facility
 
     A key management facility provides several key management services.
     """
+
 
 class IExtendedKeyManagementFacility(IKeyManagementFacility,
                                      mapping.IMapping):
@@ -67,4 +69,3 @@ class IKeyHolder(zope.interface.Interface):
         title=u'Key',
         description=u'The key used to encrypt and decrypt the data.',
         required=True)
-

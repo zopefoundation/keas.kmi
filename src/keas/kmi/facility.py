@@ -72,6 +72,7 @@ class EncryptionService(object):
         return text[:-n]
 
     _bytesToKeySalt = b'12345678'
+
     def _bytesToKey(self, data):
         # Simplified version of M2Crypto.m2.bytes_to_key().
         assert len(self._bytesToKeySalt) == 8, len(self._bytesToKeySalt)
@@ -93,7 +94,7 @@ class EncryptionService(object):
         # 4. Encrypt the data and return it.
         return cipher.encrypt(data)
 
-    def encrypt_file(self, key, fsrc, fdst, chunksize=24*1024):
+    def encrypt_file(self, key, fsrc, fdst, chunksize=24 * 1024):
         """ Encrypts a file with the given key.
 
         :param key: The encryption key.
@@ -170,7 +171,7 @@ class EncryptionService(object):
         # 4. Remove padding and return result.
         return self._pkcs7Decode(text)
 
-    def decrypt_file(self, key, fsrc, fdst, chunksize=24*1024):
+    def decrypt_file(self, key, fsrc, fdst, chunksize=24 * 1024):
         """ Decrypts a file using with the given key.
         Parameters are similar to encrypt_file.
 
@@ -201,8 +202,8 @@ class KeyManagementFacility(EncryptionService):
 
     timeout = 3600
 
-    rsaKeyLength = 2048 # The length of the key encrypting key
-    rsaKeyExponent = 65537 # Should be sufficiently high and non-symmetric
+    rsaKeyLength = 2048  # The length of the key encrypting key
+    rsaKeyExponent = 65537  # Should be sufficiently high and non-symmetric
     rsaPassphrase = 'key management facility'
 
     keyLength = rsaKeyLength // 16
@@ -222,9 +223,9 @@ class KeyManagementFacility(EncryptionService):
     def __getitem__(self, name):
         if name in self.__data_cache:
             return self.__data_cache[name]
-        if name+'.dek' not in os.listdir(self.storage_dir):
+        if name + '.dek' not in os.listdir(self.storage_dir):
             raise KeyError(name)
-        fn = os.path.join(self.storage_dir, name+'.dek')
+        fn = os.path.join(self.storage_dir, name + '.dek')
         with open(fn, 'rb') as file:
             data = file.read()
             self.__data_cache[name] = data
@@ -251,7 +252,7 @@ class KeyManagementFacility(EncryptionService):
     has_key = __contains__
 
     def __setitem__(self, name, key):
-        fn = os.path.join(self.storage_dir, name+'.dek')
+        fn = os.path.join(self.storage_dir, name + '.dek')
         with open(fn, 'wb') as file:
             file.write(key)
         logger.info('New key added (hash): %s', name)
@@ -259,7 +260,7 @@ class KeyManagementFacility(EncryptionService):
     def __delitem__(self, name):
         if name in self.__data_cache:
             del self.__data_cache[name]
-        fn = os.path.join(self.storage_dir, name+'.dek')
+        fn = os.path.join(self.storage_dir, name + '.dek')
         os.remove(fn)
         logger.info('Key removed (hash): %s', name)
 
@@ -289,7 +290,7 @@ class KeyManagementFacility(EncryptionService):
         hash_key = hash.hexdigest()
         # 2. Try to look up the key in the cache first.
         if (hash_key in self.__dek_cache and
-            self.__dek_cache[hash_key][0] + self.timeout > time.time()):
+                self.__dek_cache[hash_key][0] + self.timeout > time.time()):
             return self.__dek_cache[hash_key][1]
         # 3. Extract the encrypted encryption key
         encryptedKey = self[hash_key]
@@ -308,7 +309,7 @@ class KeyManagementFacility(EncryptionService):
         return decryptedKey
 
     def __repr__(self):
-        return '<%s (%i)>' %(self.__class__.__name__, len(self))
+        return '<%s (%i)>' % (self.__class__.__name__, len(self))
 
 
 @implementer(interfaces.IKeyManagementFacility)
@@ -335,7 +336,7 @@ class LocalKeyManagementFacility(EncryptionService):
     def getEncryptionKey(self, key):
         """Given the key encrypting key, get the encryption key."""
         if (key in self.__cache and
-            self.__cache[key][0] + self.timeout > time.time()):
+                self.__cache[key][0] + self.timeout > time.time()):
             return self.__cache[key][1]
         pieces = urlparse(self.url)
         conn = self.httpConnFactory(pieces.netloc)
@@ -347,4 +348,4 @@ class LocalKeyManagementFacility(EncryptionService):
         return encryptionKey
 
     def __repr__(self):
-        return '<%s %r>' %(self.__class__.__name__, self.url)
+        return '<%s %r>' % (self.__class__.__name__, self.url)

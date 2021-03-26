@@ -49,13 +49,13 @@ def test_suite():
     return unittest.TestSuite([
         doctest.DocFileSuite(
             'README.txt',
-            optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS),
+            optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS),
         doctest.DocFileSuite(
             'facility.txt',
-            optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS),
+            optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS),
         doctest.DocFileSuite(
             'persistent.txt',
             setUp=setUpPersistent, tearDown=tearDownPersistent,
-            optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS,
+            optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
             checker=checker),
     ])

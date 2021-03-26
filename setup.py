@@ -17,15 +17,17 @@ $Id$
 import os
 from setuptools import setup, find_packages
 
+
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-setup (
+
+setup(
     name='keas.kmi',
     version='3.3.1.dev0',
-    author = "Stephan Richter and the Zope Community",
-    author_email = "zope-dev@zope.org",
-    description = "A Key Management Infrastructure",
+    author="Stephan Richter and the Zope Community",
+    author_email="zope-dev@zope.org",
+    description="A Key Management Infrastructure",
     long_description=(
         read('README.txt')
         + '\n\n' +
@@ -34,10 +36,10 @@ setup (
         read('src', 'keas', 'kmi', 'persistent.txt')
         + '\n\n' +
         read('CHANGES.txt')
-        ),
-    license = "ZPL 2.1",
-    keywords = "security key management infrastructure nist 800-57",
-    classifiers = [
+    ),
+    license="ZPL 2.1",
+    keywords="security key management infrastructure nist 800-57",
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
@@ -46,7 +48,6 @@ setup (
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
@@ -56,18 +57,18 @@ setup (
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Topic :: Internet :: WWW/HTTP'],
-    url = 'http://pypi.python.org/pypi/keas.kmi',
-    packages = find_packages('src'),
-    include_package_data = True,
-    package_dir = {'':'src'},
-    namespace_packages = ['keas'],
-    extras_require = dict(
-        test = [
+    url='https://github.com/zopefoundation/keas.kmi',
+    packages=find_packages('src'),
+    include_package_data=True,
+    package_dir={'': 'src'},
+    namespace_packages=['keas'],
+    extras_require=dict(
+        test=[
             'zope.testing',
             'zope.app.testing',
-            ],
-        ),
-    install_requires = [
+        ],
+    ),
+    install_requires=[
         'pycryptodome',
         'pyramid',
         'pyramid_zcml',
@@ -77,8 +78,8 @@ setup (
         'zope.interface',
         'zope.schema',
     ],
-    zip_safe = False,
-    entry_points = """
+    zip_safe=False,
+    entry_points="""
     [console_scripts]
     testclient = keas.kmi.testclient:main
 
