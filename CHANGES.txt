@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.3.0 (unreleased)
+3.3.0 (2021-03-26)
 ------------------
 
 - Swap pycryptodome in for pycrypto
