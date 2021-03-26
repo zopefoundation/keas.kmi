@@ -11,8 +11,6 @@
 # FOR A PARTICULAR PURPOSE
 #
 ##############################################################################
-import sys
-
 from six import PY3
 
 # This code was copied from ZODB/_compat.py
@@ -57,4 +55,4 @@ try:
     from cStringIO import StringIO as BytesIO
 except ImportError:
     # Python 3.x
-    from io import BytesIO
+    from io import BytesIO  # noqa: F401 'io.BytesIO' imported but unused

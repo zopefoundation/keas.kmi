@@ -55,6 +55,7 @@ def pickle_nonpersistent(state):
     buf = BytesIO()
     persistent_refs = []
     cache = {}
+
     def persistent_id(obj):
         # this should probably handle the same kinds of objects that
         # ZODB.serialize.ObjectWriter.persistent_id does.
@@ -76,6 +77,7 @@ def pickle_nonpersistent(state):
 
 def unpickle_nonpersistent(data, persistent_refs):
     buf = BytesIO(data)
+
     def persistent_load(ref):
         return persistent_refs[ref]
     unpickler = Unpickler(buf)

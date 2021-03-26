@@ -37,11 +37,13 @@ EncryptedEncryptionKey = (
     b'\x10}[\xfd\x19\x98\xb1\xfa*V~U\xdf\t\x02\x01\xa6\xa8\xae\x8b\x8cm\xd9n'
     b'\xd5\x83\xa1%k\x16lfuY\\q\x8c\x8b')
 
+
 class FakeHTTPMessage(object):
 
     def __init__(self, res):
         self.res = res
         self.headers = ['Server: Fake/1.0']
+
 
 class FakeHTTPResponse(object):
 
@@ -54,7 +56,7 @@ class FakeHTTPResponse(object):
         self.fp_len = len(data)
         self.msg = FakeHTTPMessage(self)
 
-    def read(self, amt=10*2**10):
+    def read(self, amt=10 * 2**10):
         data = self.fp.read(amt)
         if self.fp_len == self.fp.tell():
             self.fp = None
@@ -107,4 +109,3 @@ class TestingKeyManagementFacility(facility.KeyManagementFacility):
 @implementer(interfaces.IKeyHolder)
 class TestingKeyHolder(object):
     key = KeyEncyptingKey
-

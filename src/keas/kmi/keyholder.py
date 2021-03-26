@@ -20,9 +20,8 @@ from keas.kmi.interfaces import IKeyHolder
 
 @implementer(IKeyHolder)
 class KeyHolder(object):
-    """A key holder utility that loads the key from a file and keeps it in RAM."""
+    """Key holder utility: it loads the key from a file and keeps it in RAM."""
 
     def __init__(self, filename):
         with open(filename, 'rb') as f:
             self.key = f.read()
-

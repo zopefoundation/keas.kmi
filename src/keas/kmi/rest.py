@@ -22,11 +22,13 @@ def get_status(context, request):
         charset='utf-8',
         headerlist=[('Content-Type', 'text/plain')])
 
+
 def create_key(context, request):
     return Response(
         context.generate(),
         charset='utf-8',
         headerlist=[('Content-Type', 'text/plain')])
+
 
 def get_key(context, request):
     key = request.body
@@ -37,4 +39,3 @@ def get_key(context, request):
             headerlist=[('Content-Type', 'text/plain')])
     except KeyError:
         return exc.HTTPNotFound('Key not found')
-

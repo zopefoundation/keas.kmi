@@ -49,7 +49,9 @@ def read_kek(kekfile):
         with open(kekfile, 'rb') as fp:
             return fp.read()
     except IOError as e:
-        print("Could not read key encrypting key from %s" % kekfile, file=sys.stderr)
+        print(
+            "Could not read key encrypting key from %s" %
+            kekfile, file=sys.stderr)
         print(e, file=sys.stderr)
         sys.exit(1)
 
@@ -126,6 +128,7 @@ parser.add_option(
     action='store_const', dest='action',
     const=decrypt)
 
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
@@ -140,5 +143,5 @@ def main(argv=None):
 
     try:
         opts.action(kmf, *args)
-    except TypeError as err:
+    except TypeError:
         parser.error('incorrect number of arguments')
