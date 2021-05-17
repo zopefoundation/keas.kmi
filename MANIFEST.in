@@ -5,11 +5,7 @@ include *.txt
 include buildout.cfg
 include tox.ini
 
-recursive-include src *.pt
 recursive-include src *.py
-recursive-include src *.rst
-recursive-include src *.txt
-recursive-include src *.zcml
 include *.conf
 include *.crt
 include *.key
@@ -18,3 +14,5 @@ include Dockerfile
 include Makefile
 include server.ini
 recursive-include docker *.sh
+recursive-include src *.txt
+recursive-include src *.zcml
