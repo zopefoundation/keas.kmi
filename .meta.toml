@@ -2,7 +2,7 @@
 # https://github.com/zopefoundation/meta/tree/master/config/pure-python
 [meta]
 template = "pure-python"
-commit-id = "ff37be82c6e4d7c4f0f96f4937f2d14d1aadae67"
+commit-id = "d4e8550e4a37df10866d376fceac4e91689df8c5"
 
 [python]
 with-appveyor = false
@@ -27,4 +27,6 @@ additional-rules = [
     "include Makefile",
     "include server.ini",
     "recursive-include docker *.sh",
+    "recursive-include src *.txt",
+    "recursive-include src *.zcml",
     ]
