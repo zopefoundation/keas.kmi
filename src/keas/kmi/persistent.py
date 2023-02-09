@@ -19,8 +19,11 @@ import persistent
 import persistent.wref
 from zope.component import getUtility
 
-from keas.kmi._compat import BytesIO, Pickler, Unpickler
-from keas.kmi.interfaces import IEncryptionService, IKeyHolder
+from keas.kmi._compat import BytesIO
+from keas.kmi._compat import Pickler
+from keas.kmi._compat import Unpickler
+from keas.kmi.interfaces import IEncryptionService
+from keas.kmi.interfaces import IKeyHolder
 
 
 class EncryptedPersistent(persistent.Persistent):

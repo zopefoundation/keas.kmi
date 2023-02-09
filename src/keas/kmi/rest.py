@@ -13,7 +13,8 @@
 ##############################################################################
 """REST-API to master key management facility
 """
-from webob import Response, exc
+from webob import Response
+from webob import exc
 
 
 def get_status(context, request):

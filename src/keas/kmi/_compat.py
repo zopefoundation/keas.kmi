@@ -13,6 +13,7 @@
 ##############################################################################
 from six import PY3
 
+
 # This code was copied from ZODB/_compat.py
 
 if not PY3:

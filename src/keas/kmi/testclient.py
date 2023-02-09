@@ -20,6 +20,7 @@ import os
 import sys
 import textwrap
 
+
 try:
     # Python 3
     from urllib.parse import urlparse

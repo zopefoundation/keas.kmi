@@ -23,6 +23,7 @@ import Crypto.Cipher.PKCS1_v1_5
 import Crypto.PublicKey.RSA
 from Crypto.Random import random
 
+
 try:
     # Python 3
     from http.client import HTTPSConnection
@@ -41,6 +42,7 @@ from hashlib import md5
 from zope.interface import implementer
 
 from keas.kmi import interfaces
+
 
 logger = logging.getLogger('kmi')
 

@@ -19,7 +19,10 @@ from io import BytesIO
 import webob
 from zope.interface import implementer
 
-from keas.kmi import facility, interfaces, rest
+from keas.kmi import facility
+from keas.kmi import interfaces
+from keas.kmi import rest
+
 
 KeyEncyptingKey = b'''-----BEGIN RSA PRIVATE KEY-----
 MIIBOAIBAAJBAL+VS9lDsS9XOaeJppfK9lhxKMRFdcg50MR3aJEQK9rvDEqNwBS9
