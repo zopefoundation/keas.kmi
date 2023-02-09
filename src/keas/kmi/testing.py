@@ -41,14 +41,14 @@ EncryptedEncryptionKey = (
     b'\xd5\x83\xa1%k\x16lfuY\\q\x8c\x8b')
 
 
-class FakeHTTPMessage(object):
+class FakeHTTPMessage:
 
     def __init__(self, res):
         self.res = res
         self.headers = ['Server: Fake/1.0']
 
 
-class FakeHTTPResponse(object):
+class FakeHTTPResponse:
 
     # These attributes should be overridden by the test setup.
     status = 200
@@ -69,7 +69,7 @@ class FakeHTTPResponse(object):
         pass
 
 
-class FakeHTTPConnection(object):
+class FakeHTTPConnection:
 
     def __init__(self, host, port=None, timeout=10):
         self.host = host
@@ -101,7 +101,7 @@ def setupRestApi(localFacility, masterFacility):
 class TestingKeyManagementFacility(facility.KeyManagementFacility):
 
     def __init__(self, storage_dir):
-        super(TestingKeyManagementFacility, self).__init__(storage_dir)
+        super().__init__(storage_dir)
         md5Key = md5(KeyEncyptingKey).hexdigest()
         self[md5Key] = EncryptedEncryptionKey
 
@@ -110,5 +110,5 @@ class TestingKeyManagementFacility(facility.KeyManagementFacility):
 
 
 @implementer(interfaces.IKeyHolder)
-class TestingKeyHolder(object):
+class TestingKeyHolder:
     key = KeyEncyptingKey

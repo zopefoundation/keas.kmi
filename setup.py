@@ -28,7 +28,7 @@ setup(
     name='keas.kmi',
     version='4.0.dev0',
     author="Stephan Richter and the Zope Community",
-    author_email="zope-dev@zope.org",
+    author_email="zope-dev@zope.dev",
     description="A Key Management Infrastructure",
     long_description=(
         read('README.txt')
@@ -63,6 +63,7 @@ setup(
     include_package_data=True,
     package_dir={'': 'src'},
     namespace_packages=['keas'],
+    python_requires='>=3.7',
     extras_require=dict(
         test=[
             'zope.testing',
@@ -74,7 +75,6 @@ setup(
         'pyramid',
         'pyramid_zcml',
         'setuptools',
-        'six',
         'transaction',
         'zope.interface',
         'zope.schema',
