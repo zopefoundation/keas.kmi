@@ -13,26 +13,29 @@
 ##############################################################################
 """Encrypted persistent objects
 """
-from __future__ import absolute_import
+
+from io import BytesIO
 
 import persistent
 import persistent.wref
 from zope.component import getUtility
 
-from keas.kmi._compat import BytesIO, Pickler, Unpickler
-from keas.kmi.interfaces import IEncryptionService, IKeyHolder
+from keas.kmi._compat import Pickler
+from keas.kmi._compat import Unpickler
+from keas.kmi.interfaces import IEncryptionService
+from keas.kmi.interfaces import IKeyHolder
 
 
 class EncryptedPersistent(persistent.Persistent):
     """A persistent object that is stored in encrypted form."""
 
     def __getstate__(self):
-        state = super(EncryptedPersistent, self).__getstate__()
+        state = super().__getstate__()
         return encrypt_state(state)
 
     def __setstate__(self, encrypted_state):
         state = decrypt_state(encrypted_state)
-        super(EncryptedPersistent, self).__setstate__(state)
+        super().__setstate__(state)
 
 
 def encrypt_state(state):

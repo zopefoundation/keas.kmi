@@ -19,7 +19,7 @@ from keas.kmi.interfaces import IKeyHolder
 
 
 @implementer(IKeyHolder)
-class KeyHolder(object):
+class KeyHolder:
     """Key holder utility: it loads the key from a file and keeps it in RAM."""
 
     def __init__(self, filename):

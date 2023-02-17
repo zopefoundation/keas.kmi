@@ -13,40 +13,31 @@
 ##############################################################################
 """Implementation of Key Management Facility
 """
-from __future__ import absolute_import
 
 import binascii
+import logging
+import os
+import struct
+import time
+from hashlib import md5
+from http.client import HTTPConnection, HTTPSConnection
+from urllib.parse import urlparse
 
 import Crypto.Cipher
 import Crypto.Cipher.AES
 import Crypto.Cipher.PKCS1_v1_5
 import Crypto.PublicKey.RSA
 from Crypto.Random import random
-
-try:
-    # Python 3
-    from http.client import HTTPSConnection
-    from urllib.parse import urlparse
-except ImportError:
-    # Python 2
-    from httplib import HTTPSConnection
-    from urlparse import urlparse
-
-import logging
-import os
-import struct
-import time
-from hashlib import md5
-
 from zope.interface import implementer
 
 from keas.kmi import interfaces
+
 
 logger = logging.getLogger('kmi')
 
 
 @implementer(interfaces.IEncryptionService)
-class EncryptionService(object):
+class EncryptionService:
 
     CipherFactory = Crypto.Cipher.AES
     CipherMode = Crypto.Cipher.AES.MODE_CBC
@@ -63,10 +54,7 @@ class EncryptionService(object):
         return text + binascii.unhexlify(n * ("%02x" % n))
 
     def _pkcs7Decode(self, text, k=16):
-        # In Python 3, text[-1] returns an int, not bytes, we need text[-1:] to
-        # have bytes. In Python 2, it doesn't matter, both return str.
-        # Actually it seems we could just do `n = text[-1]` in Python 3.
-        n = int(binascii.hexlify(text[-1:]), 16)
+        n = text[-1]
         if n > k:
             raise ValueError("Input is not padded or padding is corrupt")
         return text[:-n]
@@ -110,9 +98,7 @@ class EncryptionService(object):
         encryptionKey = self._bytesToKey(self.getEncryptionKey(key))
 
         # 2. Create a random initialization vector
-        # bytes(bytearray(generator)) is needed for Python 2,
-        # with Python 3 bytes(generator) works
-        iv = bytes(bytearray((random.randint(0, 0xFF)) for i in range(16)))
+        iv = bytes((random.randint(0, 0xFF)) for i in range(16))
 
         # 3. Create a cipher object
         cipher = self.CipherFactory.new(
@@ -317,7 +303,8 @@ class LocalKeyManagementFacility(EncryptionService):
     """A local facility that requests keys from the master facility."""
 
     timeout = 3600
-    httpConnFactory = HTTPSConnection
+    httpConnFactory = HTTPConnection
+    httpsConnFactory = HTTPSConnection
 
     def __init__(self, url):
         self.url = url
@@ -326,7 +313,10 @@ class LocalKeyManagementFacility(EncryptionService):
     def generate(self):
         """See interfaces.IKeyGenerationService"""
         pieces = urlparse(self.url)
-        conn = self.httpConnFactory(pieces.netloc)
+        if self.url.startswith('http://'):
+            conn = self.httpConnFactory(pieces.netloc)
+        else:    
+            conn = self.httpsConnFactory(pieces.netloc)
         conn.request('POST', '/new', b'', {})
         response = conn.getresponse()
         data = response.read()
@@ -348,4 +338,4 @@ class LocalKeyManagementFacility(EncryptionService):
         return encryptionKey
 
     def __repr__(self):
-        return '<%s %r>' % (self.__class__.__name__, self.url)
+        return '<{} {!r}>'.format(self.__class__.__name__, self.url)

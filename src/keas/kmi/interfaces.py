@@ -66,6 +66,6 @@ class IKeyHolder(zope.interface.Interface):
     """
 
     key = zope.schema.Bytes(
-        title=u'Key',
-        description=u'The key used to encrypt and decrypt the data.',
+        title='Key',
+        description='The key used to encrypt and decrypt the data.',
         required=True)

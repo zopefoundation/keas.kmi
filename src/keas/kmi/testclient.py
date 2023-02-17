@@ -13,19 +13,12 @@
 ##############################################################################
 """Test client to access the KMI server API.
 """
-from __future__ import print_function
 
 import optparse
 import os
 import sys
 import textwrap
-
-try:
-    # Python 3
-    from urllib.parse import urlparse
-except ImportError:
-    # Python 2
-    from urlparse import urlparse
+from urllib.parse import urlparse
 
 from keas.kmi.facility import LocalKeyManagementFacility
 
@@ -48,7 +41,7 @@ def read_kek(kekfile):
     try:
         with open(kekfile, 'rb') as fp:
             return fp.read()
-    except IOError as e:
+    except OSError as e:
         print(
             "Could not read key encrypting key from %s" %
             kekfile, file=sys.stderr)
@@ -63,7 +56,7 @@ def read_data(filename=None):
         try:
             with open(filename, 'rb') as fp:
                 return fp.read()
-        except IOError as e:
+        except OSError as e:
             print("Could not read %s" % filename, file=sys.stderr)
             print(e, file=sys.stderr)
             sys.exit(1)
