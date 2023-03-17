@@ -20,7 +20,7 @@ import os
 import struct
 import time
 from hashlib import md5
-from http.client import HTTPSConnection
+from http.client import HTTPConnection, HTTPSConnection
 from urllib.parse import urlparse
 
 import Crypto.Cipher
@@ -303,7 +303,8 @@ class LocalKeyManagementFacility(EncryptionService):
     """A local facility that requests keys from the master facility."""
 
     timeout = 3600
-    httpConnFactory = HTTPSConnection
+    httpConnFactory = HTTPConnection
+    httpsConnFactory = HTTPSConnection
 
     def __init__(self, url):
         self.url = url
@@ -312,7 +313,10 @@ class LocalKeyManagementFacility(EncryptionService):
     def generate(self):
         """See interfaces.IKeyGenerationService"""
         pieces = urlparse(self.url)
-        conn = self.httpConnFactory(pieces.netloc)
+        if self.url.startswith('http://'):
+            conn = self.httpConnFactory(pieces.netloc)
+        else:    
+            conn = self.httpsConnFactory(pieces.netloc)
         conn.request('POST', '/new', b'', {})
         response = conn.getresponse()
         data = response.read()
