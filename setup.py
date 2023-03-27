@@ -31,7 +31,7 @@ setup(
     author_email="zope-dev@zope.dev",
     description="A Key Management Infrastructure",
     long_description=(
-        read('README.txt')
+        read('README.md')
         + '\n\n' +
         read('src', 'keas', 'kmi', 'README.txt')
         + '\n\n' +
