@@ -20,7 +20,8 @@ import os
 import struct
 import time
 from hashlib import md5
-from http.client import HTTPConnection, HTTPSConnection
+from http.client import HTTPConnection
+from http.client import HTTPSConnection
 from urllib.parse import urlparse
 
 import Crypto.Cipher
@@ -315,7 +316,7 @@ class LocalKeyManagementFacility(EncryptionService):
         pieces = urlparse(self.url)
         if self.url.startswith('http://'):
             conn = self.httpConnFactory(pieces.netloc)
-        else:    
+        else:
             conn = self.httpsConnFactory(pieces.netloc)
         conn.request('POST', '/new', b'', {})
         response = conn.getresponse()
